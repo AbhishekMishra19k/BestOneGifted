@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy — BestOneGifted{% endblock %}
+{% block content %}
+<section class="about-section" style="max-width:800px;">
+    <h1 style="color:var(--green-dark);margin-bottom:16px;">Privacy Policy</h1>
+    <p style="margin-bottom:12px;">We collect only the information necessary to process your order: name, address,
+    phone number, email, and any photo/text you upload for personalization. This information is used solely
+    to fulfil your order and is never sold to third parties.</p>
+    <p style="margin-bottom:12px;">Payment details are processed securely through Razorpay and are never
+    stored on our servers. Photos uploaded for personalization are used only to print your product and are
+    deleted from our systems after your order is delivered, upon request.</p>
+    <p>For any privacy-related questions, contact us via the <a href="{% url 'products:contact' %}" style="color:var(--green-dark);">Contact Us</a> page.</p>
+    <p style="margin-top:20px;color:var(--muted);font-size:13px;">[Replace this placeholder text with your finalized policy, ideally reviewed by a professional, before going live.]</p>
+</section>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="product-section">
+    <h2>{% if category %}{{ category.name }}{% else %}All Products{% endif %}</h2>
+
+    <div class="category-strip">
+        <a href="{% url 'products:product_list' %}" class="category-pill">All</a>
+        {% for cat in categories %}
+            <a href="{% url 'products:category_detail' cat.slug %}" class="category-pill">{{ cat.name }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="product-grid">
+        {% for product in products %}
+            {% include "products/_product_card.html" %}
+        {% empty %}
+            <p>No products found.</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}

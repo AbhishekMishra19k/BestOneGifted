@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}My Orders — BestOneGifted{% endblock %}
+{% block content %}
+<section class="order-history-page">
+    <h1>My Orders</h1>
+    {% for order in orders %}
+        <div class="order-row">
+            <div>
+                <strong>#{{ order.id }}</strong> — {{ order.created_at|date:"d M Y" }}<br>
+                <span style="font-size:13px;color:var(--muted);">Rs. {{ order.get_total_cost }} · {{ order.get_payment_method_display }}</span>
+            </div>
+            <div>
+                <span class="status-pill">{{ order.get_status_display }}</span>
+                <a href="{% url 'orders:order_detail' order.id %}" class="btn-small" style="margin-left:8px;">Track</a>
+            </div>
+        </div>
+    {% empty %}
+        <p>No orders yet. <a href="{% url 'products:product_list' %}">Start shopping</a>.</p>
+    {% endfor %}
+</section>
+{% endblock %}

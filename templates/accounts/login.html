@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Login — BestOneGifted{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <h1>Welcome Back</h1>
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+        {% for field in form %}
+            <div>
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p style="color:#c0392b;font-size:13px;">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn">Login</button>
+    </form>
+    <p>New here? <a href="{% url 'accounts:signup' %}">Create an account</a></p>
+</section>
+{% endblock %}

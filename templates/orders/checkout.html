@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Checkout — BestOneGifted{% endblock %}
+{% block content %}
+
+<section class="checkout-page">
+    <h1>Checkout</h1>
+
+    <div class="checkout-grid">
+        <form method="post" class="checkout-form">
+            {% csrf_token %}
+            <h3>Shipping Details</h3>
+            <input type="text" name="full_name" placeholder="Full Name" value="{{ initial.full_name|default:'' }}" required>
+            <input type="email" name="email" placeholder="Email (optional)" value="{{ initial.email|default:'' }}">
+            <input type="tel" name="phone" placeholder="Phone Number" value="{{ initial.phone|default:'' }}" required>
+            <textarea name="address" placeholder="Full Address" required>{{ initial.address|default:'' }}</textarea>
+            <div class="row-3">
+                <input type="text" name="city" placeholder="City" value="{{ initial.city|default:'' }}" required>
+                <input type="text" name="state" placeholder="State" value="{{ initial.state|default:'' }}" required>
+                <input type="text" name="pincode" placeholder="Pincode" value="{{ initial.pincode|default:'' }}" required>
+            </div>
+            {% if not user.is_authenticated %}
+                <p style="font-size:13px;color:var(--muted);"><a href="{% url 'accounts:login' %}?next={{ request.path }}">Log in</a> to auto-fill your saved address next time.</p>
+            {% endif %}
+
+            <h3>Payment Method</h3>
+            <label class="payment-option">
+                <input type="radio" name="payment_method" value="cod" checked>
+                Cash on Delivery
+            </label>
+            <label class="payment-option {% if not razorpay_enabled %}disabled{% endif %}">
+                <input type="radio" name="payment_method" value="online" {% if not razorpay_enabled %}disabled{% endif %}>
+                Pay Online — UPI / Card / Net Banking (Razorpay){% if not razorpay_enabled %} — not configured yet{% endif %}
+            </label>
+
+            <h3>Special Instructions (optional)</h3>
+            <textarea name="special_instructions" placeholder="Any gifting notes or personalization instructions for us..."></textarea>
+
+            <p class="delivery-note">🚚 Estimated delivery: 5-8 days from order date</p>
+
+            <button type="submit" class="btn">Place Order</button>
+        </form>
+
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+            <ul>
+                {% for item in cart %}
+                    <li>{{ item.product.name }} × {{ item.quantity }} — Rs. {{ item.total_price }}</li>
+                {% endfor %}
+            </ul>
+            <strong>Subtotal: Rs. {{ cart.get_subtotal }}</strong>
+            {% if cart.get_coupon_discount > 0 %}<div style="color:var(--green-dark);">Coupon Discount: -Rs. {{ cart.get_coupon_discount }}</div>{% endif %}
+            <strong style="display:block;margin-top:6px;font-size:18px;">Total: Rs. {{ cart.get_total_price }}</strong>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }} — BestOneGifted{% endblock %}
+{% block content %}
+<section class="order-detail-page">
+    <h1>Order #{{ order.id }}</h1>
+    <p>Placed on {{ order.created_at|date:"d M Y, h:i A" }}</p>
+
+    {% if order.status == 'cancelled' %}
+        <p class="status-pill" style="background:#fde8e8;color:#c0392b;">Cancelled</p>
+    {% else %}
+    <div class="tracker">
+        {% for step, label in order.STATUS_CHOICES %}
+            {% if step != 'cancelled' %}
+                <div class="tracker-step {% if forloop.counter0 <= order.status_step_index %}done{% endif %}">
+                    <div class="dot">{% if forloop.counter0 <= order.status_step_index %}✓{% else %}{{ forloop.counter }}{% endif %}</div>
+                    <span class="label">{{ label }}</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="delivery-box">
+        🚚 <strong>Estimated Delivery:</strong> {{ order.delivery_min_date|date:"d M" }} – {{ order.delivery_max_date|date:"d M, Y" }}
+    </div>
+    {% endif %}
+
+    <table class="cart-table">
+        <thead><tr><th>Product</th><th>Qty</th><th>Price</th></tr></thead>
+        <tbody>
+        {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>Rs. {{ item.get_cost }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <strong>Total: Rs. {{ order.get_total_cost }}</strong>
+
+    <p style="margin-top:16px;"><strong>Delivery Address:</strong><br>
+    {{ order.full_name }}, {{ order.address }}, {{ order.city }}, {{ order.state }} - {{ order.pincode }}<br>
+    Phone: {{ order.phone }}</p>
+
+    <p style="margin-top:20px;"><a href="{% url 'orders:order_history' %}" class="btn">Back to My Orders</a></p>
+</section>
+{% endblock %}

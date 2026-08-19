@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}My Wishlist — BestOneGifted{% endblock %}
+{% block content %}
+<section class="cart-page">
+    <h1>My Wishlist</h1>
+    <div class="product-grid" style="margin-top:20px;">
+        {% for item in items %}
+            {% with product=item.product %}
+                {% include "products/_product_card.html" %}
+            {% endwith %}
+        {% empty %}
+            <p>Your wishlist is empty. <a href="{% url 'products:product_list' %}">Browse products</a> and tap the ♥ icon to save items here.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+<div class="product-card">
+    <div class="img-wrap" style="position:relative;">
+        <a href="{{ product.get_absolute_url }}">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+                <div class="no-image">No Image</div>
+            {% endif %}
+        </a>
+        {% if product.mrp and product.mrp > product.price %}<span class="sale-badge">Sale</span>{% endif %}
+        {% if user.is_authenticated %}
+            <button class="wishlist-heart {% if product.id in wishlist_product_ids %}active{% endif %}"
+                    data-product-id="{{ product.id }}" title="Add to Wishlist">♥</button>
+        {% endif %}
+        <button class="quick-view-btn" data-slug="{{ product.slug }}" title="Quick View">Quick View</button>
+    </div>
+    <a href="{{ product.get_absolute_url }}"><h3>{{ product.name }}</h3></a>
+    <div class="price-row">
+        {% if product.mrp %}
+            <span class="mrp">Rs. {{ product.mrp }}</span>
+        {% endif %}
+        <span class="price">Rs. {{ product.price }}</span>
+    </div>
+    <form action="{% url 'cart:cart_add' product.id %}" method="post" class="js-cart-form">
+        {% csrf_token %}
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" class="btn-small">Add to Cart</button>
+    </form>
+</div>

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /cart/
+Disallow: /accounts/dashboard/
+
+Sitemap: https://bestonegifted.onrender.com/sitemap.xml

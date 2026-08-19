@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Shipping Policy — BestOneGifted{% endblock %}
+{% block content %}
+<section class="about-section" style="max-width:800px;">
+    <h1 style="color:var(--green-dark);margin-bottom:16px;">Shipping Policy</h1>
+    <p style="margin-bottom:12px;">All orders are custom-made after you place them, so please allow 5-8 days
+    for your order to be printed, packed, and delivered to your doorstep across India.</p>
+    <p style="margin-bottom:12px;">Once your order ships, you'll receive a tracking link by email/SMS so you
+    can follow its journey. You can also check status anytime from your <a href="{% url 'accounts:dashboard' %}" style="color:var(--green-dark);">My Account</a> dashboard.</p>
+    <p style="margin-top:20px;color:var(--muted);font-size:13px;">[Replace this placeholder text with your finalized policy, and update delivery timelines once you've connected a shipping partner.]</p>
+</section>
+{% endblock %}

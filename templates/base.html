@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}BestOneGifted — Customized gifts: photo mugs, t-shirts, name plates, frames, bottles &amp; pens. Cash on Delivery available. Delivered in 5-8 days.{% endblock %}">
+    <title>{% block title %}BestOneGifted — Customized Gifts for Every Occasion{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="topbar">
+        <span class="topbar-msg">✨ Make your memories memorable with bestonegifted</span>
+        <span class="topbar-msg">📞 +91 92014 61413 · support@bestonegifted.com</span>
+        <span class="topbar-msg">🚚 Cash on Delivery Available · Delivered in 5-8 Days</span>
+    </div>
+    <div class="nav-wrap">
+        <a href="{% url 'products:home' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="BestOneGifted" class="logo-img">
+        </a>
+
+        <div class="search-wrap">
+            <form action="{% url 'products:product_list' %}" method="get" class="search-form" autocomplete="off">
+                <input type="text" name="q" id="search-input" placeholder="Search mugs, tshirts, frames...">
+                <button type="submit">Search</button>
+            </form>
+            <div id="search-dropdown" class="search-dropdown"></div>
+        </div>
+
+        <nav class="main-nav">
+            <a href="{% url 'products:home' %}">Home</a>
+            <a href="{% url 'products:product_list' %}">Categories</a>
+            <a href="{% url 'products:about' %}">About Us</a>
+            <a href="{% url 'products:contact' %}">Contact</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'orders:order_history' %}">Track Order</a>
+                <a href="{% url 'accounts:dashboard' %}">My Account</a>
+                <a href="{% url 'accounts:logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">Login</a>
+                <a href="{% url 'accounts:signup' %}">Sign Up</a>
+            {% endif %}
+        </nav>
+
+        <div class="header-icons">
+            <a href="{% url 'wishlist:wishlist_page' %}" class="icon-link" title="Wishlist">
+                ♥{% if wishlist_count > 0 %}<span class="icon-badge">{{ wishlist_count }}</span>{% endif %}
+            </a>
+            <a href="#" id="cart-icon-link" class="icon-link cart-link" title="Cart">
+                🛒{% if cart|length > 0 %}<span class="icon-badge">{{ cart|length }}</span>{% endif %}
+            </a>
+        </div>
+    </div>
+</header>
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+        <div class="message">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Newsletter bar -->
+<section class="newsletter-bar reveal">
+    <div>
+        <h3>Get 10% Off Your First Order</h3>
+        <p>Subscribe for personalized gift ideas &amp; exclusive offers.</p>
+    </div>
+    <form id="newsletter-form" action="{% url 'products:newsletter_subscribe' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <input type="email" name="email" placeholder="Your email address" required>
+        <button type="submit" class="btn">Subscribe</button>
+    </form>
+</section>
+
+<footer class="site-footer">
+    <div class="footer-grid">
+        <div>
+            <h4>BestOneGifted</h4>
+            <p>Customized gifts crafted to preserve life's most meaningful moments — mugs, t-shirts, name plates, frames, bottles &amp; more.</p>
+            <div class="social-icons">
+                <a href="https://wa.me/919201461413" target="_blank" rel="noopener" aria-label="WhatsApp">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.001 2C6.478 2 2 6.478 2 12c0 1.86.505 3.607 1.383 5.104L2 22l5.03-1.354A9.947 9.947 0 0012.001 22C17.523 22 22 17.522 22 12S17.523 2 12.001 2zm0 18.001c-1.652 0-3.192-.474-4.494-1.29l-.322-.192-3.298.888.887-3.247-.21-.334A7.964 7.964 0 014 12c0-4.41 3.589-8 8.001-8 4.41 0 7.999 3.59 7.999 8s-3.589 8.001-7.999 8.001z"/></svg>
+                </a>
+                <a href="https://instagram.com/bestonegifted" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM12 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                </a>
+                <a href="https://youtube.com/@bestonegifted" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+            </div>
+        </div>
+        <div>
+            <h4>Our Company</h4>
+            <a href="{% url 'products:home' %}">Home</a>
+            <a href="{% url 'products:product_list' %}">All Products</a>
+            <a href="{% url 'products:about' %}">About Us</a>
+            <a href="{% url 'products:contact' %}">Contact Us</a>
+            <a href="{% url 'orders:order_history' %}">Track Order</a>
+        </div>
+        <div>
+            <h4>Customer Service</h4>
+            <a href="{% url 'products:shipping_policy' %}">Shipping Policy</a>
+            <a href="{% url 'products:refund_policy' %}">Refund Policy</a>
+            <a href="{% url 'products:privacy_policy' %}">Privacy Policy</a>
+            <a href="{% url 'products:terms' %}">Terms of Service</a>
+        </div>
+    </div>
+    <p class="copyright">&copy; 2026 BestOneGifted. All Rights Reserved.</p>
+</footer>
+
+<!-- Cart Drawer -->
+<div id="cart-drawer-overlay" class="drawer-overlay"></div>
+<aside id="cart-drawer" class="cart-drawer">
+    <div class="drawer-header">
+        <h3>Your Cart</h3>
+        <button id="drawer-close">✕</button>
+    </div>
+    <div id="drawer-content">{% include "cart/_drawer.html" %}</div>
+</aside>
+
+<!-- Quick View Modal -->
+<div id="quick-view-overlay" class="drawer-overlay"></div>
+<div id="quick-view-modal" class="quick-view-modal">
+    <button id="qv-close">✕</button>
+    <div id="qv-content"></div>
+</div>
+
+<!-- WhatsApp Floating Button -->
+<a href="https://wa.me/919201461413" target="_blank" rel="noopener" class="whatsapp-float" title="Chat on WhatsApp">
+    <svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.001 2C6.478 2 2 6.478 2 12c0 1.86.505 3.607 1.383 5.104L2 22l5.03-1.354A9.947 9.947 0 0012.001 22C17.523 22 22 17.522 22 12S17.523 2 12.001 2zm0 18.001c-1.652 0-3.192-.474-4.494-1.29l-.322-.192-3.298.888.887-3.247-.21-.334A7.964 7.964 0 014 12c0-4.41 3.589-8 8.001-8 4.41 0 7.999 3.59 7.999 8s-3.589 8.001-7.999 8.001z"/></svg>
+</a>
+
+<!-- Sticky Mobile Bottom Nav -->
+<nav class="mobile-bottom-nav">
+    <a href="{% url 'products:home' %}"><span>🏠</span>Home</a>
+    <a href="{% url 'products:product_list' %}"><span>🛍️</span>Shop</a>
+    <a href="{% url 'wishlist:wishlist_page' %}"><span>♥</span>Wishlist</a>
+    <a href="#" id="mobile-cart-link"><span>🛒</span>Cart{% if cart|length > 0 %}<em>{{ cart|length }}</em>{% endif %}</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'accounts:dashboard' %}"><span>👤</span>Account</a>
+    {% else %}
+        <a href="{% url 'accounts:login' %}"><span>👤</span>Login</a>
+    {% endif %}
+</nav>
+
+{% if not user.is_authenticated %}
+<!-- Login Popup: appears after a few seconds of scrolling -->
+<div id="login-popup-overlay" class="drawer-overlay"></div>
+<div id="login-popup" class="login-popup">
+    <button id="login-popup-close">✕</button>
+    <img src="{% static 'images/logo.png' %}" alt="BestOneGifted" class="login-popup-logo">
+    <h3>Welcome to BestOneGifted!</h3>
+    <p>Log in for faster checkout, order tracking &amp; a saved address.</p>
+    <a href="{% url 'accounts:login' %}" class="btn full">Login / Sign Up</a>
+    <a href="https://wa.me/919201461413" target="_blank" rel="noopener" class="whatsapp-link-account" style="justify-content:center;margin-top:14px;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.001 2C6.478 2 2 6.478 2 12c0 1.86.505 3.607 1.383 5.104L2 22l5.03-1.354A9.947 9.947 0 0012.001 22C17.523 22 22 17.522 22 12S17.523 2 12.001 2zm0 18.001c-1.652 0-3.192-.474-4.494-1.29l-.322-.192-3.298.888.887-3.247-.21-.334A7.964 7.964 0 014 12c0-4.41 3.589-8 8.001-8 4.41 0 7.999 3.59 7.999 8s-3.589 8.001-7.999 8.001z"/></svg>
+        Or chat with us: +91 92014 61413
+    </a>
+</div>
+{% endif %}
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+
+<!-- Analytics / Tracking: replace G-XXXXXXX with your real Google Analytics ID once you have one -->
+{% comment %}
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXX');
+</script>
+{% endcomment %}
+</body>
+</html>

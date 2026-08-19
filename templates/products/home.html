@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}BestOneGifted — Make Your Memories Memorable{% endblock %}
+{% block meta_description %}BestOneGifted — Personalized photo frames, photo magazines, mugs &amp; more. 2000+ happy customers, 4.4★ rated. COD available. Delivered in 5-8 days.{% endblock %}
+{% block content %}
+
+<section class="hero">
+    <div class="hero-content">
+        <span class="hero-badge">🎁 2,000+ Happy Customers · 4.4★ Rated</span>
+        <h1>Make Your Memories Memorable with <em>BestOneGifted</em></h1>
+        <p>Personalized photo frames, photo magazines &amp; customized gifts — crafted with care, delivered to your door in 5-8 days.</p>
+        <a href="{% url 'products:product_list' %}" class="btn">Shop Now</a>
+        <a href="#our-story" class="btn-outline">Our Story</a>
+    </div>
+</section>
+
+<section class="featured-cat-bar reveal">
+    <a href="{% url 'products:product_list' %}?q=photo+frame" class="featured-cat-tile">
+        <span class="fc-icon">🖼️</span>
+        <span>Photo Frame</span>
+    </a>
+    <a href="{% url 'products:product_list' %}?q=photo+magazine" class="featured-cat-tile">
+        <span class="fc-icon">📖</span>
+        <span>Photo Magazine</span>
+    </a>
+</section>
+
+<section class="category-strip reveal">
+    {% for cat in categories %}
+        <a href="{% url 'products:category_detail' cat.slug %}" class="category-pill">{{ cat.name }}</a>
+    {% endfor %}
+</section>
+
+<section class="reveal">
+    <h2 style="text-align:center;color:var(--green-dark);margin:20px 0 6px;">To Whom Do You Want to Surprise?</h2>
+    <div class="occasion-strip reveal-stagger">
+        {% for tag, label in occasions %}
+            <a href="{% url 'products:occasion_detail' tag %}" class="occasion-tile">{{ label }}</a>
+        {% endfor %}
+    </div>
+</section>
+
+{% if deal_of_day %}
+<div class="deal-banner"><div class="deal-marquee">🔥 DEAL OF THE DAY — {{ deal_of_day.name }} at Rs. {{ deal_of_day.price }} — Limited Time Offer — Grab It Before It's Gone! 🔥</div></div>
+<div class="deal-of-day-card reveal">
+    {% if deal_of_day.image %}<img src="{{ deal_of_day.image.url }}" alt="{{ deal_of_day.name }}">{% endif %}
+    <div style="flex:1;">
+        <h3>{{ deal_of_day.name }}</h3>
+        <div class="price-row">
+            {% if deal_of_day.mrp %}<span class="mrp">Rs. {{ deal_of_day.mrp }}</span>{% endif %}
+            <span class="price">Rs. {{ deal_of_day.price }}</span>
+        </div>
+        <a href="{{ deal_of_day.get_absolute_url }}" class="btn" style="margin-top:10px;display:inline-block;">Grab This Deal</a>
+    </div>
+</div>
+{% endif %}
+
+<section class="product-section reveal">
+    <h2>New Arrivals</h2>
+    <div class="product-grid reveal-stagger">
+        {% for product in new_arrivals %}
+            {% include "products/_product_card.html" %}
+        {% empty %}
+            <p>No products yet — add some from the Django admin.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="product-section reveal">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <h2>Best Sellers</h2>
+        <div class="trust-stats">
+            <span>💚 2,000+ Happy Customers</span>
+            <span>⭐ 4.4★ Rating</span>
+        </div>
+    </div>
+    <div class="product-grid reveal-stagger">
+        {% for product in bestsellers %}
+            {% include "products/_product_card.html" %}
+        {% empty %}
+            <p>Mark products as "bestseller" in admin to show them here.</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% if gallery %}
+<section class="product-section reveal">
+    <h2>Loved By Our Customers 💚</h2>
+    <div class="gallery-grid reveal-stagger">
+        {% for product in gallery %}
+            {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }} delivered to happy customer">{% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section id="our-story" class="our-story-section reveal">
+    <div class="our-story-inner">
+        <h2 class="our-story-title">Hamari Kahani | Bestonegifted</h2>
+        <p class="our-story-subtitle">Sagar (MP) Se Shuru Hua Ek Khwaab: 2000+ Muskurahaton Ka Safar</p>
+
+        <p class="our-story-para">Har rishte ki apni ek dastaan hoti hai, aur har muskurahat ke peeche chhupi hoti hai ek anmol yaad. Bestonegifted ki shuruat Sagar (Madhya Pradesh) ke ek chhote se kamre aur ek seedhe-saadhe jazbaat se hui thi—ki tohfe sirf ek physical product ya dabba-band cheez nahi, balki dil ke ehsaas aur yaadein hone chahiye.</p>
+
+        <h3 class="our-story-heading">Sirf Gift Nahi, Ek Feeling</h3>
+        <p class="our-story-para">Log aksar gift dete hain, par waqt ke sath cheezein purani ho jaati hain. Jo cheez hamesha zinda rehti hai, wo hai feeling. Humne har order ko sirf ek parcel nahi, balki kisi ke pyaar, dosti, pehli anniversary ya parivar ke anmol lamhe ki tarah banaya aur pack kiya hai.</p>
+
+        <div class="milestone-row reveal-stagger">
+            <div class="milestone-item">🎁 <strong>2,000+</strong><span>Happy Customers</span></div>
+            <div class="milestone-item">⭐ <strong>4.4+</strong><span>Star Rating</span></div>
+            <div class="milestone-item">🖼️ <strong>Premium</strong><span>Photo Frames &amp; Magazines</span></div>
+        </div>
+
+        <p class="our-story-quote">"Make your memories memorable with bestonegifted."</p>
+        <a href="{% url 'products:product_list' %}" class="btn">Explore Categories</a>
+    </div>
+</section>
+
+<section class="reviews-section reveal">
+    <h2>What Our Customers Say</h2>
+    <div class="review-grid reveal-stagger">
+        {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+                {% if review.photo %}<img src="{{ review.photo.url }}" alt="Customer photo" class="review-photo">{% endif %}
+                {% if review.video_url %}<a href="{{ review.video_url }}" target="_blank" rel="noopener" class="review-video-tag">▶ Watch video review</a>{% endif %}
+                <p>"{{ review.comment }}"</p>
+                <div class="review-author">— {{ review.user.first_name|default:review.user.username }}{% if review.product %}, bought {{ review.product.name }}{% endif %}</div>
+            </div>
+        {% empty %}
+            <p>Be the first to leave a review after your order arrives!</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}

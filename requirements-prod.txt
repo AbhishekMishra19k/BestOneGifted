@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# PostgreSQL driver - only needed on the production server (Render/Railway),
+# not for local development where SQLite is used. Install this file (not
+# requirements.txt) when setting up the deployment build command:
+#   pip install -r requirements-prod.txt
+psycopg2-binary==2.9.9

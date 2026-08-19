@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Contact Us — BestOneGifted{% endblock %}
+{% block content %}
+<section class="auth-page" style="max-width:600px;">
+    <h1>Contact Us</h1>
+    <p style="color:var(--muted);margin:10px 0 20px;">Have a question about customization or your order? Send us a message, or reach us directly on WhatsApp.</p>
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+        <div><label>Name</label><input type="text" name="name" required></div>
+        <div><label>Email</label><input type="email" name="email" required></div>
+        <div><label>Phone (optional)</label><input type="tel" name="phone"></div>
+        <div><label>Message</label><textarea name="message" rows="5" required style="width:100%;padding:10px;border:1px solid #cfe8d6;border-radius:6px;"></textarea></div>
+        <button type="submit" class="btn">Send Message</button>
+    </form>
+    <p style="margin-top:20px;">Or chat with us directly: <a href="https://wa.me/919201461413" target="_blank" style="color:var(--green-dark);font-weight:600;">WhatsApp Us →</a></p>
+</section>
+{% endblock %}

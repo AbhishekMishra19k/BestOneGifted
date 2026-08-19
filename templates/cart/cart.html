@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Your Cart — BestOneGifted{% endblock %}
+{% block content %}
+
+<section class="cart-page">
+    <h1>Your Cart</h1>
+
+    {% if cart|length == 0 %}
+        <p>Your cart is empty. <a href="{% url 'products:product_list' %}">Start shopping</a>.</p>
+    {% else %}
+    <table class="cart-table">
+        <thead><tr><th>Product</th><th>Personalization</th><th>Price</th><th>Quantity</th><th>Total</th><th></th></tr></thead>
+        <tbody>
+        {% for item in cart %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>
+                    {% if item.custom_text %}<div class="personalize-tag">✎ {{ item.custom_text }}</div>{% endif %}
+                    {% if item.photo_path %}<div class="personalize-tag">📷 Photo attached</div>{% endif %}
+                    {% if not item.custom_text and not item.photo_path %}<span style="color:var(--muted);">—</span>{% endif %}
+                </td>
+                <td>Rs. {{ item.price }}</td>
+                <td>
+                    <form method="post" action="{% url 'cart:cart_update' item.key %}" class="inline-form">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
+                        <button type="submit" class="btn-small">Update</button>
+                    </form>
+                </td>
+                <td>Rs. {{ item.total_price }}</td>
+                <td>
+                    <form method="post" action="{% url 'cart:cart_remove' item.key %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-remove">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="cart-lower-grid">
+        <div class="coupon-box">
+            {% if cart.coupon_code %}
+                <p>Coupon applied: <strong>{{ cart.coupon_code }}</strong> (-Rs. {{ cart.get_coupon_discount }})</p>
+                <form method="post" action="{% url 'cart:remove_coupon' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-small">Remove Coupon</button>
+                </form>
+            {% else %}
+                <form method="post" action="{% url 'cart:apply_coupon' %}" class="inline-form">
+                    {% csrf_token %}
+                    <input type="text" name="code" placeholder="Enter coupon code">
+                    <button type="submit" class="btn-small">Apply</button>
+                </form>
+            {% endif %}
+        </div>
+        <div class="cart-total">
+            <div>Subtotal: Rs. {{ cart.get_subtotal }}</div>
+            {% if cart.get_coupon_discount > 0 %}<div>Discount: -Rs. {{ cart.get_coupon_discount }}</div>{% endif %}
+            <div style="font-size:20px;font-weight:700;">Total: Rs. {{ cart.get_total_price }}</div>
+        </div>
+    </div>
+
+    <a href="{% url 'orders:checkout' %}" class="btn">Proceed to Checkout</a>
+    {% endif %}
+</section>
+
+{% endblock %}

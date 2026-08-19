@@ -1,0 +1,20 @@
+<div class="qv-grid">
+    <div class="qv-image">
+        {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<div class="no-image large"></div>{% endif %}
+    </div>
+    <div class="qv-info">
+        <h2>{{ product.name }}</h2>
+        <div class="price-row">
+            {% if product.mrp %}<span class="mrp">Rs. {{ product.mrp }}</span>{% endif %}
+            <span class="price">Rs. {{ product.price }}</span>
+        </div>
+        <p class="description">{{ product.description|truncatewords:35 }}</p>
+        <p class="delivery-note">🚚 Delivered in 5-8 days</p>
+        <form action="/cart/add/{{ product.id }}/" method="post" class="js-cart-form">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn">Add to Cart</button>
+        </form>
+        <a href="{{ product.get_absolute_url }}" style="display:block;margin-top:10px;color:var(--green-dark);font-size:14px;">View Full Details →</a>
+    </div>
+</div>

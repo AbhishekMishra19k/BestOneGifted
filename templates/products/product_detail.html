@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — Customized Gift | BestOneGifted{% endblock %}
+{% block meta_description %}Buy {{ product.name }} customized just for you at BestOneGifted. COD available, delivered in 5-8 days.{% endblock %}
+{% block content %}
+
+<section class="product-detail">
+    <div class="product-detail-image">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+            <div class="no-image large">No Image</div>
+        {% endif %}
+    </div>
+    <div class="product-detail-info">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <h1>{{ product.name }}</h1>
+            {% if user.is_authenticated %}
+                <button class="wishlist-heart" style="position:static;background:var(--green-pale2);"
+                        data-product-id="{{ product.id }}" title="Add to Wishlist">♥</button>
+            {% endif %}
+        </div>
+        <div class="price-row">
+            {% if product.mrp %}
+                <span class="mrp">Rs. {{ product.mrp }}</span>
+            {% endif %}
+            <span class="price">Rs. {{ product.price }}</span>
+        </div>
+
+        {% if product.in_stock %}
+            <p class="stock in">In Stock</p>
+        {% else %}
+            <p class="stock out">Out of Stock</p>
+        {% endif %}
+
+        <p class="description">{{ product.description }}</p>
+
+        {% if product.in_stock %}
+        <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form js-cart-form" enctype="multipart/form-data" style="flex-direction:column;align-items:stretch;">
+            {% csrf_token %}
+
+            {% if product.allow_personalization %}
+            <div class="personalization-fields">
+                <label>Custom Text / Name (optional)</label>
+                <input type="text" name="custom_text" maxlength="200" placeholder="e.g. 'Happy Birthday Riya' or a name">
+                <label>Upload Photo (optional)</label>
+                <input type="file" name="custom_photo" accept="image/*">
+            </div>
+            {% endif %}
+
+            <div style="display:flex;gap:10px;align-items:center;">
+                <label>Qty:
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width:60px;padding:6px;">
+                </label>
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn">Add to Cart</button>
+            </div>
+        </form>
+        {% endif %}
+
+        <div class="trust-badges">
+            <span class="trust-badge">🔒 Secure Checkout</span>
+            <span class="trust-badge">↺ 3 Days Easy Return</span>
+            <span class="trust-badge">💵 COD Available</span>
+            <span class="trust-badge">🚚 5-8 Day Delivery</span>
+        </div>
+        <p class="delivery-note">🚚 Estimated delivery: 5-8 days after order confirmation</p>
+    </div>
+</section>
+
+<section class="reviews-section">
+    <h2>Customer Reviews</h2>
+    <div class="review-grid">
+        {% for review in product_reviews %}
+            <div class="review-card">
+                <div class="review-stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+                <p>"{{ review.comment }}"</p>
+                <div class="review-author">— {{ review.user.first_name|default:review.user.username }}</div>
+            </div>
+        {% empty %}
+            <p>No reviews yet for this product.</p>
+        {% endfor %}
+    </div>
+
+    {% if user.is_authenticated %}
+    <form method="post" class="review-form">
+        {% csrf_token %}
+        <label>Your Rating
+            <select name="rating">
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Good</option>
+                <option value="3">3 - Average</option>
+                <option value="2">2 - Below Average</option>
+                <option value="1">1 - Poor</option>
+            </select>
+        </label>
+        <textarea name="comment" placeholder="Share your experience with this product..." required></textarea>
+        <button type="submit" class="btn">Submit Review</button>
+    </form>
+    {% else %}
+        <p><a href="{% url 'accounts:login' %}?next={{ request.path }}">Log in</a> to leave a review.</p>
+    {% endif %}
+</section>
+
+{% if related %}
+<section class="product-section">
+    <h2>You may also like</h2>
+    <div class="product-grid">
+        {% for product in related %}
+            {% include "products/_product_card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

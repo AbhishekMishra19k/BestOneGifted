@@ -1,0 +1,27 @@
+<div class="drawer-items">
+    {% for item in cart %}
+        <div class="drawer-item">
+            {% if item.product.image %}<img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">{% else %}<div class="no-image" style="width:60px;height:60px;"></div>{% endif %}
+            <div class="drawer-item-info">
+                <strong>{{ item.product.name }}</strong>
+                {% if item.custom_text %}<span class="personalize-tag">✎ "{{ item.custom_text }}"</span>{% endif %}
+                {% if item.photo_path %}<span class="personalize-tag">📷 Photo attached</span>{% endif %}
+                <span>Qty: {{ item.quantity }} × Rs. {{ item.price }}</span>
+            </div>
+            <form method="post" action="{% url 'cart:cart_remove' item.key %}" class="js-cart-form">
+                {% csrf_token %}
+                <button type="submit" class="drawer-remove" title="Remove">✕</button>
+            </form>
+        </div>
+    {% empty %}
+        <p class="drawer-empty">Your cart is empty.</p>
+    {% endfor %}
+</div>
+{% if cart|length > 0 %}
+<div class="drawer-footer">
+    <div class="drawer-subtotal">Subtotal: <strong>Rs. {{ cart.get_total_price }}</strong></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Taxes &amp; shipping calculated at checkout</p>
+    <a href="{% url 'cart:cart_detail' %}" class="btn-outline-full">View Cart</a>
+    <a href="{% url 'orders:checkout' %}" class="btn full">Checkout</a>
+</div>
+{% endif %}
