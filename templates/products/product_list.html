@@ -2,7 +2,7 @@
 {% block content %}
 
 <section class="product-section">
-    <h2>{% if category %}{{ category.name }}{% else %}All Products{% endif %}</h2>
+    <h2>{% if category %}{{ category.name }}{% elif occasion_label %}{{ occasion_label }}{% else %}All Products{% endif %}</h2>
 
     <div class="category-strip">
         <a href="{% url 'products:product_list' %}" class="category-pill">All</a>

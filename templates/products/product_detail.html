@@ -4,7 +4,7 @@
 {% block content %}
 
 <section class="product-detail">
-    <div class="product-detail-image">
+    <div class="product-detail-image ambient-card">
         {% if product.image %}
             <img src="{{ product.image.url }}" alt="{{ product.name }}">
         {% else %}
@@ -15,7 +15,7 @@
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
             <h1>{{ product.name }}</h1>
             {% if user.is_authenticated %}
-                <button class="wishlist-heart" style="position:static;background:var(--green-pale2);"
+                <button class="wishlist-heart" style="position:static;background:rgba(255,255,255,.05);"
                         data-product-id="{{ product.id }}" title="Add to Wishlist">♥</button>
             {% endif %}
         </div>
@@ -47,7 +47,7 @@
             </div>
             {% endif %}
 
-            <div style="display:flex;gap:10px;align-items:center;">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <label>Qty:
                     <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width:60px;padding:6px;">
                 </label>

@@ -73,6 +73,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // ---------- 3b) Add-to-cart success toast (visual-only, Part 2) ----------
+    function showCartToast(text) {
+        var toast = document.createElement('div');
+        toast.className = 'cart-toast';
+        toast.textContent = text;
+        document.body.appendChild(toast);
+        requestAnimationFrame(function () { toast.classList.add('show'); });
+        setTimeout(function () {
+            toast.classList.remove('show');
+            setTimeout(function () { toast.remove(); }, 300);
+        }, 1800);
+    }
+
     // ---------- 4) AJAX Add-to-Cart for all .js-cart-form ----------
     function bindCartForms() {
         document.querySelectorAll('.js-cart-form').forEach(function (form) {
@@ -81,6 +94,21 @@ document.addEventListener('DOMContentLoaded', function () {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
                 var formData = new FormData(form);
+                // Visual-only loading state on the submit button (Part 2: add-to-cart polish)
+                var submitBtn = form.querySelector('button[type=submit]');
+                var btnOriginalText = submitBtn ? submitBtn.textContent : null;
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('is-loading');
+                    submitBtn.textContent = 'Adding...';
+                }
+                function restoreBtn() {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('is-loading');
+                        submitBtn.textContent = btnOriginalText;
+                    }
+                }
                 fetch(form.action, {
                     method: 'POST',
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -97,8 +125,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         void cartIconLink.offsetWidth;
                         cartIconLink.classList.add('bump');
                     }
+                    restoreBtn();
+                    showCartToast('Added to cart');
                     openDrawer();
-                  }).catch(function () { form.submit(); });
+                  }).catch(function () { restoreBtn(); form.submit(); });
             });
         });
     }
@@ -220,6 +250,30 @@ document.addEventListener('DOMContentLoaded', function () {
     if (authForm) {
         var firstInput = authForm.querySelector('input:not([type=hidden])');
         if (firstInput) firstInput.focus();
+    }
+
+    // ---------- 11b) Mobile hamburger nav drawer (new — redesign) ----------
+    var mobileNavDrawer = document.getElementById('mobile-nav-drawer');
+    var mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+    var mobileNavOpenBtn = document.getElementById('mobile-nav-open');
+    var mobileNavCloseBtn = document.getElementById('mobile-nav-close');
+    function openMobileNav() { if (mobileNavDrawer) mobileNavDrawer.classList.add('open'); if (mobileNavOverlay) mobileNavOverlay.classList.add('open'); }
+    function closeMobileNav() { if (mobileNavDrawer) mobileNavDrawer.classList.remove('open'); if (mobileNavOverlay) mobileNavOverlay.classList.remove('open'); }
+    if (mobileNavOpenBtn) mobileNavOpenBtn.addEventListener('click', openMobileNav);
+    if (mobileNavCloseBtn) mobileNavCloseBtn.addEventListener('click', closeMobileNav);
+    if (mobileNavOverlay) mobileNavOverlay.addEventListener('click', closeMobileNav);
+
+    // ---------- 11c) Product card mouse-following spotlight (Part 2 — desktop only) ----------
+    if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        document.querySelectorAll('.product-card').forEach(function (card) {
+            card.addEventListener('mousemove', function (e) {
+                var rect = card.getBoundingClientRect();
+                var x = ((e.clientX - rect.left) / rect.width) * 100;
+                var y = ((e.clientY - rect.top) / rect.height) * 100;
+                card.style.setProperty('--spot-x', x + '%');
+                card.style.setProperty('--spot-y', y + '%');
+            });
+        });
     }
 
     // ---------- 11) Login popup: show once, a few seconds after the user starts scrolling ----------

@@ -17,7 +17,9 @@
         <span class="topbar-msg">📞 +91 92014 61413 · support@bestonegifted.com</span>
         <span class="topbar-msg">🚚 Cash on Delivery Available · Delivered in 5-8 Days</span>
     </div>
-    <div class="nav-wrap">
+    <div class="nav-wrap glass">
+        <button type="button" class="hamburger-btn" id="mobile-nav-open" aria-label="Open menu">☰</button>
+
         <a href="{% url 'products:home' %}" class="logo">
             <img src="{% static 'images/logo.png' %}" alt="BestOneGifted" class="logo-img">
         </a>
@@ -32,7 +34,9 @@
 
         <nav class="main-nav">
             <a href="{% url 'products:home' %}">Home</a>
+            <a href="{% url 'products:product_list' %}">Shop</a>
             <a href="{% url 'products:product_list' %}">Categories</a>
+            <a href="{% url 'products:home' %}#our-story">Deals</a>
             <a href="{% url 'products:about' %}">About Us</a>
             <a href="{% url 'products:contact' %}">Contact</a>
             {% if user.is_authenticated %}
@@ -52,9 +56,35 @@
             <a href="#" id="cart-icon-link" class="icon-link cart-link" title="Cart">
                 🛒{% if cart|length > 0 %}<span class="icon-badge">{{ cart|length }}</span>{% endif %}
             </a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'accounts:dashboard' %}" class="icon-link" title="My Account">👤</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="icon-link" title="Login">👤</a>
+            {% endif %}
         </div>
     </div>
 </header>
+
+<!-- Mobile Nav Drawer (hamburger menu) -->
+<div id="mobile-nav-overlay" class="drawer-overlay"></div>
+<nav id="mobile-nav-drawer" class="mobile-nav-drawer">
+    <button type="button" class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">✕</button>
+    <a href="{% url 'products:home' %}">Home</a>
+    <a href="{% url 'products:product_list' %}">Shop</a>
+    <a href="{% url 'products:product_list' %}">Categories</a>
+    <a href="{% url 'products:home' %}#our-story">Deals</a>
+    <a href="{% url 'wishlist:wishlist_page' %}">Wishlist</a>
+    <a href="{% url 'products:about' %}">About Us</a>
+    <a href="{% url 'products:contact' %}">Contact</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'orders:order_history' %}">Track Order</a>
+        <a href="{% url 'accounts:dashboard' %}">My Account</a>
+        <a href="{% url 'accounts:logout' %}">Logout</a>
+    {% else %}
+        <a href="{% url 'accounts:login' %}">Login</a>
+        <a href="{% url 'accounts:signup' %}">Sign Up</a>
+    {% endif %}
+</nav>
 
 {% if messages %}
 <div class="messages">
@@ -71,7 +101,7 @@
 <!-- Newsletter bar -->
 <section class="newsletter-bar reveal">
     <div>
-        <h3>Get 10% Off Your First Order</h3>
+        <h3 class="gradient-text">Get 10% Off Your First Order</h3>
         <p>Subscribe for personalized gift ideas &amp; exclusive offers.</p>
     </div>
     <form id="newsletter-form" action="{% url 'products:newsletter_subscribe' %}" method="post">
