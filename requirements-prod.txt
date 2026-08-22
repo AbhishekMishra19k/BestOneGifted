@@ -4,4 +4,4 @@
 # not for local development where SQLite is used. Install this file (not
 # requirements.txt) when setting up the deployment build command:
 #   pip install -r requirements-prod.txt
-psycopg2-binary==2.9.9
+psycopg2-binary>=2.9.10

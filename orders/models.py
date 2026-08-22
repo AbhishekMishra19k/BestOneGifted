@@ -1,3 +1,4 @@
+import secrets
 from datetime import timedelta
 from django.db import models
 from django.conf import settings
@@ -13,11 +14,14 @@ class Coupon(models.Model):
     active = models.BooleanField(default=True)
     valid_from = models.DateTimeField(default=timezone.now)
     valid_to = models.DateTimeField(null=True, blank=True)
+    max_uses = models.PositiveIntegerField(null=True, blank=True, help_text='Leave blank for unlimited total uses across all customers')
+    max_uses_per_user = models.PositiveIntegerField(default=1, help_text='How many times ONE customer/email may use this code')
+    times_used = models.PositiveIntegerField(default=0, editable=False)
 
     def __str__(self):
         return self.code
 
-    def is_valid(self, order_total):
+    def is_valid(self, order_total, user=None, email=''):
         if not self.active:
             return False
         now = timezone.now()
@@ -27,6 +31,16 @@ class Coupon(models.Model):
             return False
         if order_total < self.min_order_value:
             return False
+        if self.max_uses is not None and self.times_used >= self.max_uses:
+            return False
+        if user is not None and user.is_authenticated:
+            used_by_user = Order.objects.filter(coupon=self, user=user).exclude(status=Order.STATUS_CANCELLED).count()
+            if used_by_user >= self.max_uses_per_user:
+                return False
+        elif email:
+            used_by_email = Order.objects.filter(coupon=self, email__iexact=email).exclude(status=Order.STATUS_CANCELLED).count()
+            if used_by_email >= self.max_uses_per_user:
+                return False
         return True
 
     def calculate_discount(self, order_total):
@@ -61,6 +75,11 @@ class Order(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
 
+    # Security: random, unguessable token for guest order-confirmation access (fixes IDOR — see SECURITY_AUDIT.md #2)
+    access_token = models.CharField(max_length=64, unique=True, editable=False, blank=True)
+    # Security: prevents duplicate orders from double-clicks / retried requests (fixes #5)
+    idempotency_key = models.CharField(max_length=64, unique=True, null=True, blank=True, editable=False)
+
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     special_instructions = models.TextField(blank=True, help_text='Gifting notes / personalization instructions from customer')
@@ -85,6 +104,11 @@ class Order(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.access_token:
+            self.access_token = secrets.token_urlsafe(32)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Order #{self.id} - {self.full_name}'

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.views.generic import TemplateView
+from decouple import config
 from products.sitemaps import ProductSitemap, CategorySitemap, StaticViewSitemap
 
 admin.site.site_header = 'BestOneGifted Admin'
@@ -16,8 +17,14 @@ sitemaps = {
     'static': StaticViewSitemap,
 }
 
+# Fix SECURITY_AUDIT.md #15: default admin path is publicly known and
+# unthrottled-by-obscurity. Set ADMIN_URL in your environment to something
+# private (e.g. "staff-portal-x7k2/") before going live. Falls back to the
+# default 'admin/' for local development if not set.
+ADMIN_URL = config('ADMIN_URL', default='admin/')
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(ADMIN_URL, admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('cart/', include('cart.urls')),
     path('wishlist/', include('wishlist.urls')),

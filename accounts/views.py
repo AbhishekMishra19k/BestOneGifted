@@ -4,10 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django_ratelimit.decorators import ratelimit
 from .forms import SignupForm, ProfileForm
 from orders.models import Order
 
 
+@ratelimit(key='ip', rate='10/h', method='POST', block=True)
 def signup(request):
     if request.user.is_authenticated:
         return redirect('accounts:dashboard')
@@ -15,7 +17,11 @@ def signup(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            # Explicit backend required: django-axes adds a second auth backend
+            # (AxesStandaloneBackend) for login lockout tracking, so Django can
+            # no longer infer which backend to attach for a freshly-created
+            # user that wasn't authenticated via authenticate().
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, 'Welcome to BestOneGifted! Your account is ready.')
             return redirect('accounts:dashboard')
     else:
@@ -36,7 +42,7 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    orders = Order.objects.filter(user=request.user).order_by('-created_at').prefetch_related('items__product')
     if request.method == 'POST':
         form = ProfileForm(request.POST, instance=request.user.profile, user=request.user)
         if form.is_valid():

@@ -77,6 +77,7 @@
     <form id="newsletter-form" action="{% url 'products:newsletter_subscribe' %}" method="post">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ request.path }}">
+        <input type="text" name="website" value="" style="position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true">
         <input type="email" name="email" placeholder="Your email address" required>
         <button type="submit" class="btn">Subscribe</button>
     </form>

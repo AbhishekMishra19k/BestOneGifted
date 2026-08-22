@@ -6,8 +6,9 @@
     <h1>Checkout</h1>
 
     <div class="checkout-grid">
-        <form method="post" class="checkout-form">
+        <form method="post" class="checkout-form" id="checkout-form">
             {% csrf_token %}
+            <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
             <h3>Shipping Details</h3>
             <input type="text" name="full_name" placeholder="Full Name" value="{{ initial.full_name|default:'' }}" required>
             <input type="email" name="email" placeholder="Email (optional)" value="{{ initial.email|default:'' }}">
@@ -37,8 +38,19 @@
 
             <p class="delivery-note">🚚 Estimated delivery: 5-8 days from order date</p>
 
-            <button type="submit" class="btn">Place Order</button>
+            <button type="submit" class="btn" id="place-order-btn">Place Order</button>
         </form>
+        <script>
+            // Fix SECURITY_AUDIT.md #5: block double-click / double-submit on checkout.
+            // The idempotency_key hidden field stays the same across a resubmit,
+            // so even if this JS guard fails (JS disabled), the server still
+            // dedupes via Order.idempotency_key.
+            document.getElementById('checkout-form').addEventListener('submit', function () {
+                var btn = document.getElementById('place-order-btn');
+                btn.disabled = true;
+                btn.textContent = 'Placing your order...';
+            });
+        </script>
 
         <div class="order-summary">
             <h3>Order Summary</h3>

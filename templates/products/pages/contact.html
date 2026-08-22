@@ -6,6 +6,7 @@
     <p style="color:var(--muted);margin:10px 0 20px;">Have a question about customization or your order? Send us a message, or reach us directly on WhatsApp.</p>
     <form method="post" class="auth-form">
         {% csrf_token %}
+        <input type="text" name="website" value="" style="position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true">
         <div><label>Name</label><input type="text" name="name" required></div>
         <div><label>Email</label><input type="email" name="email" required></div>
         <div><label>Phone (optional)</label><input type="tel" name="phone"></div>

@@ -1,11 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 from .models import Product, Category, Review, NewsletterSubscriber, ContactMessage
+
+PRODUCTS_PER_PAGE = 24
 
 
 def home(request):
@@ -29,10 +33,13 @@ def home(request):
 
 def occasion_detail(request, tag):
     products = Product.objects.filter(is_active=True, audience_tag=tag)
+    paginator = Paginator(products, PRODUCTS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page'))
     label = dict(Product.AUDIENCE_CHOICES).get(tag, tag)
     categories = Category.objects.all()
     return render(request, 'products/product_list.html', {
-        'products': products,
+        'products': page_obj,
+        'page_obj': page_obj,
         'categories': categories,
         'occasion_label': label,
     })
@@ -50,9 +57,18 @@ def product_list(request):
         products = products.order_by('-price')
     elif sort == 'newest':
         products = products.order_by('-created_at')
+    else:
+        products = products.order_by('-created_at')
+
+    # Fix SECURITY_AUDIT.md #12: paginate instead of loading the entire
+    # catalog in one response — protects both DB and page-weight at scale.
+    paginator = Paginator(products, PRODUCTS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
     categories = Category.objects.all()
     return render(request, 'products/product_list.html', {
-        'products': products,
+        'products': page_obj,
+        'page_obj': page_obj,
         'categories': categories,
         'query': query or '',
         'sort': sort or '',
@@ -62,9 +78,12 @@ def product_list(request):
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
     products = Product.objects.filter(category=category, is_active=True)
+    paginator = Paginator(products, PRODUCTS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page'))
     categories = Category.objects.all()
     return render(request, 'products/product_list.html', {
-        'products': products,
+        'products': page_obj,
+        'page_obj': page_obj,
         'category': category,
         'categories': categories,
     })
@@ -115,6 +134,18 @@ def search_suggest(request):
 
 @require_POST
 def newsletter_subscribe(request):
+    # Fix SECURITY_AUDIT.md #8 (partial): honeypot field catches basic bots;
+    # a session cooldown stops rapid repeat submissions without needing a
+    # separate cache/redis backend (works the same on serverless or a VM).
+    if request.POST.get('website'):  # honeypot — real users never fill this hidden field
+        return JsonResponse({'ok': True, 'message': 'Subscribed! Watch your inbox for 10% off.'}) if request.headers.get('x-requested-with') == 'XMLHttpRequest' else redirect(request.POST.get('next', 'products:home'))
+
+    last_submit = request.session.get('newsletter_last_submit')
+    now_ts = timezone.now().timestamp()
+    if last_submit and (now_ts - last_submit) < 10:
+        return JsonResponse({'ok': False, 'message': 'Please wait a moment before trying again.'})
+    request.session['newsletter_last_submit'] = now_ts
+
     email = request.POST.get('email', '').strip()
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
     if not email or '@' not in email:
@@ -136,6 +167,17 @@ def about(request):
 
 def contact(request):
     if request.method == 'POST':
+        # Same lightweight anti-spam pattern as newsletter_subscribe.
+        if request.POST.get('website'):
+            return redirect('products:contact')
+
+        last_submit = request.session.get('contact_last_submit')
+        now_ts = timezone.now().timestamp()
+        if last_submit and (now_ts - last_submit) < 15:
+            messages.error(request, 'Please wait a moment before sending another message.')
+            return redirect('products:contact')
+        request.session['contact_last_submit'] = now_ts
+
         ContactMessage.objects.create(
             name=request.POST.get('name', ''),
             email=request.POST.get('email', ''),

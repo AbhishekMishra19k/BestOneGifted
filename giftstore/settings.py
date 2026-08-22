@@ -28,12 +28,27 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
 
+    'axes',
+
     'accounts',
     'products',
     'cart',
     'orders',
     'wishlist',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',  # must be first — enforces lockout
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Fix SECURITY_AUDIT.md #8/#15: lock out an IP+username combo after repeated
+# failed logins (covers both /accounts/login/ and /admin/login/, since both
+# use Django's auth backend chain).
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 1  # hours
+AXES_LOCKOUT_PARAMETERS = ['username', 'ip_address']
+AXES_RESET_ON_SUCCESS = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -44,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',  # must be last
 ]
 
 ROOT_URLCONF = 'giftstore.urls'
@@ -109,10 +125,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CART_SESSION_ID = 'cart'
 
+# Cache backend for rate limiting (django-ratelimit). LocMemCache is fine for
+# a single-process deploy; switch to Redis/Memcached if you run multiple
+# gunicorn workers, so rate-limit counters are shared across processes.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 # Razorpay keys - set these as environment variables in production.
 # Get them from https://dashboard.razorpay.com/app/keys
 RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID', default='')
 RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='')
+RAZORPAY_WEBHOOK_SECRET = config('RAZORPAY_WEBHOOK_SECRET', default='')
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
