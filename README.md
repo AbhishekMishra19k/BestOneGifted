@@ -105,11 +105,13 @@ homepage and the relevant product page.
 
 ---
 
-## 8. Deploy to Production (Render.com — free tier)
+## 8. Deploy to Production
+
+### Option A — Render.com (recommended, simplest)
 
 1. Push this project to a GitHub repo
 2. On Render.com -> New -> Web Service -> connect your repo
-3. Build command: `pip install -r requirements-prod.txt && python manage.py collectstatic --noinput`
+3. Build command: `pip install -r requirements.txt && python manage.py collectstatic --noinput`
 4. Start command: `gunicorn giftstore.wsgi`
 5. Add a free PostgreSQL database (Render -> New -> PostgreSQL) — copy its "Internal Database URL"
 6. Set Environment Variables on Render:
@@ -117,6 +119,7 @@ homepage and the relevant product page.
    SECRET_KEY=<generate a strong random string>
    DEBUG=False
    ALLOWED_HOSTS=yourdomain.com,your-app.onrender.com
+   CSRF_TRUSTED_ORIGINS=https://your-app.onrender.com
    DATABASE_URL=<paste from Render Postgres>
    RAZORPAY_KEY_ID=...
    RAZORPAY_KEY_SECRET=...
@@ -127,6 +130,45 @@ homepage and the relevant product page.
    `https://your-domain/sitemap.xml` so Google starts indexing it.
 9. (Optional, paid) Buy domain `bestonegifted.com` and connect it under
    Render -> Settings -> Custom Domain.
+
+### Option B — Vercel (serverless — has real limitations, read this first)
+
+Vercel's filesystem is **read-only** except a temporary `/tmp` folder, and every
+request may hit a fresh server instance. This means:
+- **SQLite will not work** — you must use an external Postgres database
+  (e.g. [Neon.tech](https://neon.tech), free, no card required).
+- **Uploaded media** (product photos, review photos, personalization uploads)
+  will **not persist** between deployments or reliably between requests. For a
+  real store, connect an external media host (Cloudinary, AWS S3) — not
+  included in this project yet.
+- There is no "release phase" like Render — you must run `migrate` yourself
+  against the remote database from your own machine.
+
+Steps:
+1. Create a free Postgres database at neon.tech, copy its connection string (`DATABASE_URL`).
+2. Push this project to GitHub, import it into Vercel.
+3. In Vercel -> Project -> Settings -> Environment Variables, add:
+   ```
+   SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_urlsafe(50))">
+   DEBUG=False
+   ALLOWED_HOSTS=your-app.vercel.app,.vercel.app
+   CSRF_TRUSTED_ORIGINS=https://your-app.vercel.app
+   DATABASE_URL=<your Neon connection string>
+   SITE_DOMAIN=your-app.vercel.app
+   ```
+4. From your **local machine**, point at the same database temporarily and run migrations:
+   ```
+   $env:DATABASE_URL="<your Neon connection string>"    (PowerShell)
+   python manage.py migrate
+   python manage.py createsuperuser
+   python manage.py loaddata products/fixtures/sample_data.json
+   ```
+5. Redeploy on Vercel (Deployments tab -> "..." -> Redeploy) so it picks up the new environment variables.
+6. `vercel.json` and `build_files.sh` are already included in this project and
+   handle static file collection during the Vercel build.
+
+If the site still 500s after this, check Vercel -> Deployments -> latest ->
+**Runtime Logs** for the exact Python traceback.
 
 ### Final checklist before calling it "live":
 - [ ] `DEBUG=False` in production
