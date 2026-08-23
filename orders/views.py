@@ -1,16 +1,9 @@
-import hashlib
-import hmac
-import json
 import secrets
 from decimal import Decimal
 
-from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django_ratelimit.core import is_ratelimited
@@ -18,23 +11,12 @@ from products.models import Product
 from cart.cart import Cart
 from .models import Order, OrderItem, Coupon
 
-try:
-    import razorpay
-except ImportError:
-    razorpay = None
-
 
 class InsufficientStock(Exception):
     def __init__(self, product_name, available):
         self.product_name = product_name
         self.available = available
         super().__init__(f'Only {available} left for "{product_name}"')
-
-
-def _get_razorpay_client():
-    if razorpay and settings.RAZORPAY_KEY_ID and settings.RAZORPAY_KEY_SECRET:
-        return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-    return None
 
 
 def _create_order_from_cart(request, cart, form_data, idempotency_key):
@@ -69,7 +51,7 @@ def _create_order_from_cart(request, cart, form_data, idempotency_key):
             idempotency_key=idempotency_key,
             full_name=form_data['full_name'], email=form_data['email'], phone=form_data['phone'],
             address=form_data['address'], city=form_data['city'], state=form_data['state'],
-            pincode=form_data['pincode'], payment_method=form_data['payment_method'],
+            pincode=form_data['pincode'], payment_method=Order.PAYMENT_COD,
             coupon=coupon_obj, discount_amount=discount_amount,
             special_instructions=form_data['special_instructions'],
         )
@@ -111,8 +93,6 @@ def checkout(request):
         messages.warning(request, 'Your cart is empty.')
         return redirect('products:home')
 
-    razorpay_enabled = bool(_get_razorpay_client())
-
     initial = {}
     if request.user.is_authenticated:
         profile = getattr(request.user, 'profile', None)
@@ -142,7 +122,6 @@ def checkout(request):
             'city': request.POST.get('city', '').strip(),
             'state': request.POST.get('state', '').strip(),
             'pincode': request.POST.get('pincode', '').strip(),
-            'payment_method': request.POST.get('payment_method', Order.PAYMENT_COD),
             'special_instructions': request.POST.get('special_instructions', '').strip(),
         }
 
@@ -162,162 +141,14 @@ def checkout(request):
             )
             return redirect('cart:cart_detail')
 
-        if form_data['payment_method'] == Order.PAYMENT_ONLINE and razorpay_enabled:
-            client = _get_razorpay_client()
-            if created and not order.razorpay_order_id:
-                amount_paise = int(order.get_total_cost() * 100)
-                razorpay_order = client.order.create({
-                    'amount': amount_paise,
-                    'currency': 'INR',
-                    'payment_capture': 1,
-                    # Tie the Razorpay order back to OUR order id so payment_verify()
-                    # can never be tricked into confirming the wrong order (fixes #1).
-                    'notes': {'internal_order_id': str(order.id)},
-                })
-                order.razorpay_order_id = razorpay_order['id']
-                order.save(update_fields=['razorpay_order_id'])
-            amount_paise = int(order.get_total_cost() * 100)
-            return render(request, 'orders/razorpay_payment.html', {
-                'order': order,
-                'razorpay_order_id': order.razorpay_order_id,
-                'razorpay_key_id': settings.RAZORPAY_KEY_ID,
-                'amount_paise': amount_paise,
-            })
-        else:
-            cart.clear()
-            return redirect('orders:order_success', order_id=order.id, token=order.access_token)
+        cart.clear()
+        return redirect('orders:order_success', order_id=order.id, token=order.access_token)
 
     return render(request, 'orders/checkout.html', {
         'cart': cart,
-        'razorpay_enabled': razorpay_enabled,
         'initial': initial,
         'idempotency_key': secrets.token_urlsafe(32),
     })
-
-
-@csrf_exempt
-def payment_verify(request):
-    """
-    Verifies a client-relayed Razorpay payment confirmation.
-    Fixes SECURITY_AUDIT.md #1: the razorpay_order_id in the request is now
-    cross-checked against the ONE internal Order it was created for, and the
-    payment is re-fetched server-side from Razorpay to confirm the amount and
-    capture status, instead of trusting the client's word for it.
-    """
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error'}, status=400)
-
-    if is_ratelimited(request, group='payment_verify', key='ip', rate='20/m', method='POST', increment=True):
-        return JsonResponse({'status': 'error', 'message': 'Too many requests'}, status=429)
-
-    try:
-        data = json.loads(request.body)
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({'status': 'error', 'message': 'Malformed request'}, status=400)
-
-    order_id = data.get('order_id')
-    razorpay_order_id = data.get('razorpay_order_id')
-    razorpay_payment_id = data.get('razorpay_payment_id')
-    razorpay_signature = data.get('razorpay_signature')
-
-    order = get_object_or_404(Order, id=order_id)
-
-    client = _get_razorpay_client()
-    if not client:
-        return JsonResponse({'status': 'error', 'message': 'Payment gateway not configured'}, status=400)
-
-    # --- Fix #1, step 1: the Razorpay order referenced MUST be the one we
-    # created for THIS order. Without this check, a signature that is valid
-    # for a different (e.g. cheaper) order could be replayed here. ---
-    if not order.razorpay_order_id or order.razorpay_order_id != razorpay_order_id:
-        return JsonResponse({'status': 'error', 'message': 'Order mismatch'}, status=400)
-
-    if order.is_paid:
-        # Already confirmed (e.g. by the webhook) — idempotent success response.
-        return JsonResponse({'status': 'ok', 'redirect_url': f'/orders/success/{order.id}/{order.access_token}/'})
-
-    params = {
-        'razorpay_order_id': razorpay_order_id,
-        'razorpay_payment_id': razorpay_payment_id,
-        'razorpay_signature': razorpay_signature,
-    }
-    try:
-        client.utility.verify_payment_signature(params)
-    except razorpay.errors.SignatureVerificationError:
-        return JsonResponse({'status': 'error', 'message': 'Signature verification failed'}, status=400)
-
-    # --- Fix #1, step 2: don't just trust the signature math — re-fetch the
-    # payment from Razorpay's servers and confirm it was actually captured
-    # for the expected amount before marking the order paid. ---
-    try:
-        payment = client.payment.fetch(razorpay_payment_id)
-    except Exception:
-        return JsonResponse({'status': 'error', 'message': 'Could not verify payment with Razorpay'}, status=400)
-
-    expected_paise = int(order.get_total_cost() * 100)
-    if payment.get('status') != 'captured' or int(payment.get('amount', 0)) != expected_paise:
-        return JsonResponse({'status': 'error', 'message': 'Payment amount/status mismatch'}, status=400)
-
-    order.razorpay_payment_id = razorpay_payment_id
-    order.razorpay_signature = razorpay_signature
-    order.is_paid = True
-    order.save(update_fields=['razorpay_payment_id', 'razorpay_signature', 'is_paid'])
-
-    cart = Cart(request)
-    cart.clear()
-
-    return JsonResponse({'status': 'ok', 'redirect_url': f'/orders/success/{order.id}/{order.access_token}/'})
-
-
-@csrf_exempt
-@require_POST
-def razorpay_webhook(request):
-    """
-    Server-to-server Razorpay webhook. Fixes SECURITY_AUDIT.md #6: payment
-    confirmation no longer depends on the customer's browser staying open
-    and calling payment_verify() — Razorpay calls this directly the moment
-    a payment is captured, even if the client-side JS never fires.
-
-    Set this URL in your Razorpay Dashboard -> Settings -> Webhooks:
-        https://yourdomain.com/orders/razorpay-webhook/
-    Subscribe to the 'payment.captured' event, and set RAZORPAY_WEBHOOK_SECRET
-    in your environment to the same secret you configure there.
-    """
-    if not settings.RAZORPAY_WEBHOOK_SECRET:
-        return HttpResponse(status=503)
-
-    signature = request.headers.get('X-Razorpay-Signature', '')
-    body = request.body
-
-    expected_signature = hmac.new(
-        settings.RAZORPAY_WEBHOOK_SECRET.encode('utf-8'), body, hashlib.sha256
-    ).hexdigest()
-    if not hmac.compare_digest(expected_signature, signature):
-        return HttpResponseForbidden('Invalid webhook signature')
-
-    try:
-        payload = json.loads(body)
-    except json.JSONDecodeError:
-        return HttpResponse(status=400)
-
-    if payload.get('event') == 'payment.captured':
-        payment_entity = payload.get('payload', {}).get('payment', {}).get('entity', {})
-        razorpay_order_id = payment_entity.get('order_id')
-        razorpay_payment_id = payment_entity.get('id')
-        amount = payment_entity.get('amount')
-
-        try:
-            order = Order.objects.get(razorpay_order_id=razorpay_order_id)
-        except Order.DoesNotExist:
-            return HttpResponse(status=200)  # unknown order, nothing to do, but ack so Razorpay stops retrying
-
-        expected_paise = int(order.get_total_cost() * 100)
-        if amount == expected_paise and not order.is_paid:
-            order.razorpay_payment_id = razorpay_payment_id
-            order.is_paid = True
-            order.save(update_fields=['razorpay_payment_id', 'is_paid'])
-
-    return HttpResponse(status=200)
 
 
 def order_success(request, order_id, token):

@@ -18,8 +18,8 @@ class CouponAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id', 'full_name', 'phone', 'city', 'payment_method', 'status', 'discount_amount', 'created_at']
-    list_filter = ['status', 'payment_method', 'created_at']
-    list_editable = ['status']
+    list_display = ['id', 'full_name', 'phone', 'city', 'payment_method', 'status', 'is_paid', 'whatsapp_confirmed', 'discount_amount', 'created_at']
+    list_filter = ['status', 'is_paid', 'whatsapp_confirmed', 'created_at']
+    list_editable = ['status', 'is_paid', 'whatsapp_confirmed']
     search_fields = ['full_name', 'phone', 'email']
     inlines = [OrderItemInline]

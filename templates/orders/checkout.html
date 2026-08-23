@@ -24,14 +24,14 @@
             {% endif %}
 
             <h3>Payment Method</h3>
-            <label class="payment-option">
-                <input type="radio" name="payment_method" value="cod" checked>
-                Cash on Delivery
-            </label>
-            <label class="payment-option {% if not razorpay_enabled %}disabled{% endif %}">
-                <input type="radio" name="payment_method" value="online" {% if not razorpay_enabled %}disabled{% endif %}>
-                Pay Online — UPI / Card / Net Banking (Razorpay){% if not razorpay_enabled %} — not configured yet{% endif %}
-            </label>
+            <div class="payment-option" style="border-color:var(--green);background:var(--green-pale2);">
+                <input type="hidden" name="payment_method" value="cod">
+                💵 Cash on Delivery — pay when it arrives at your door
+            </div>
+            <p style="font-size:13px;color:var(--muted);margin-top:-6px;">
+                Want to pay online instead, or confirm customization details first? After placing your order,
+                you'll get a one-tap button to confirm everything on WhatsApp.
+            </p>
 
             <h3>Special Instructions (optional)</h3>
             <textarea name="special_instructions" placeholder="Any gifting notes or personalization instructions for us..."></textarea>

@@ -77,6 +77,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'cart.context_processors.cart',
                 'wishlist.context_processors.wishlist',
+                'products.context_processors.whatsapp',
             ],
         },
     },
@@ -121,6 +122,19 @@ STORAGES = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Product/review/personalization photo uploads to local disk (default below)
+# won't survive on Vercel's read-only serverless filesystem — uploads vanish
+# on the next deploy or cold start. If CLOUDINARY_URL is set, uploaded media
+# is stored on Cloudinary's free tier instead and works correctly on Vercel.
+# Get a free CLOUDINARY_URL from https://cloudinary.com/users/register/free
+# (Dashboard -> shows it directly as "CLOUDINARY_URL=cloudinary://...").
+CLOUDINARY_URL = config('CLOUDINARY_URL', default='')
+if CLOUDINARY_URL:
+    INSTALLED_APPS += ['cloudinary_storage', 'cloudinary']
+    STORAGES['default'] = {'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage'}
+else:
+    STORAGES['default'] = {'BACKEND': 'django.core.files.storage.FileSystemStorage'}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CART_SESSION_ID = 'cart'
@@ -134,11 +148,9 @@ CACHES = {
     }
 }
 
-# Razorpay keys - set these as environment variables in production.
-# Get them from https://dashboard.razorpay.com/app/keys
-RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID', default='')
-RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='')
-RAZORPAY_WEBHOOK_SECRET = config('RAZORPAY_WEBHOOK_SECRET', default='')
+# Business WhatsApp number customers are sent to for order confirmation
+# (used in Order.whatsapp_confirm_link() and throughout the site).
+WHATSAPP_BUSINESS_NUMBER = config('WHATSAPP_BUSINESS_NUMBER', default='919201461413')
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

@@ -53,10 +53,8 @@ class Coupon(models.Model):
 
 class Order(models.Model):
     PAYMENT_COD = 'cod'
-    PAYMENT_ONLINE = 'online'
     PAYMENT_CHOICES = [
         (PAYMENT_COD, 'Cash on Delivery'),
-        (PAYMENT_ONLINE, 'Online Payment (Razorpay)'),
     ]
 
     STATUS_PLACED = 'placed'
@@ -94,11 +92,8 @@ class Order(models.Model):
 
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default=PAYMENT_COD)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PLACED)
-    is_paid = models.BooleanField(default=False)
-
-    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
-    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
-    razorpay_signature = models.CharField(max_length=255, blank=True, null=True)
+    is_paid = models.BooleanField(default=False, help_text='Tick once payment/COD amount is collected')
+    whatsapp_confirmed = models.BooleanField(default=False, help_text='Customer confirmed this order via WhatsApp')
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -133,6 +128,25 @@ class Order(models.Model):
         if self.status in self.STATUS_STEPS:
             return self.STATUS_STEPS.index(self.status)
         return -1
+
+    def whatsapp_confirm_link(self):
+        """Build a wa.me deep link pre-filled with this order's summary, so the
+        customer can confirm/finalize the order directly with the business."""
+        import urllib.parse
+        from django.conf import settings
+        business_number = getattr(settings, 'WHATSAPP_BUSINESS_NUMBER', '919201461413')
+        lines = [f"Hi! I've placed Order #{self.id} on BestOneGifted."]
+        for item in self.items.all():
+            name = item.product.name if item.product else 'Item'
+            line = f"- {name} x{item.quantity}"
+            if item.custom_text:
+                line += f' ("{item.custom_text}")'
+            lines.append(line)
+        lines.append(f"Total: Rs. {self.get_total_cost()}")
+        lines.append(f"Delivery to: {self.city}, {self.pincode}")
+        lines.append("Please confirm my order. Thank you!")
+        message = "\n".join(lines)
+        return f"https://wa.me/{business_number}?text={urllib.parse.quote(message)}"
 
 
 class OrderItem(models.Model):

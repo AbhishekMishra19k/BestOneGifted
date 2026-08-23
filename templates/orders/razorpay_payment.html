@@ -3,9 +3,11 @@
 {% block content %}
 
 <section class="checkout-page">
-    <h1>Complete Your Payment</h1>
-    <p>Order #{{ order.id }} — Total: Rs. {{ order.get_total_cost }}</p>
-    <button id="rzp-button" class="btn">Pay Now</button>
+    <div class="payment-card ambient-card glow reveal">
+        <h1>Complete Your Payment</h1>
+        <p>Order #{{ order.id }} — Total: Rs. {{ order.get_total_cost }}</p>
+        <button id="rzp-button" class="btn full">Pay Now</button>
+    </div>
 </section>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
