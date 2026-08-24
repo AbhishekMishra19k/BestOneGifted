@@ -8,6 +8,8 @@ from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from .models import Product, Category, Review, NewsletterSubscriber, ContactMessage
+from .models import Product, Category, Review, NewsletterSubscriber, ContactMessage, ProductVariant
+from products.models import Product, ProductVariant
 
 PRODUCTS_PER_PAGE = 24
 
@@ -94,6 +96,14 @@ def product_detail(request, slug):
     related = Product.objects.filter(category=product.category, is_active=True).exclude(id=product.id)[:4]
     product_reviews = product.reviews.filter(is_approved=True)
 
+    variants = product.variants.filter(is_active=True)
+    sizes = sorted({v.size for v in variants if v.size})
+    colors = sorted({v.color for v in variants if v.color})
+    variants_data = [
+        {'id': v.id, 'size': v.size, 'color': v.color, 'price': str(v.price), 'stock': v.stock}
+        for v in variants
+    ]
+
     if request.method == 'POST' and request.user.is_authenticated:
         rating = request.POST.get('rating', 5)
         comment = request.POST.get('comment', '').strip()
@@ -106,8 +116,10 @@ def product_detail(request, slug):
         'product': product,
         'related': related,
         'product_reviews': product_reviews,
+        'sizes': sizes,
+        'colors': colors,
+        'variants_json': variants_data,
     })
-
 
 def quick_view(request, slug):
     product = get_object_or_404(Product, slug=slug, is_active=True)
