@@ -6,9 +6,22 @@
 <section class="product-detail">
     <div class="product-detail-image ambient-card">
         {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            <div class="product-zoom-wrap" id="product-zoom-wrap">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" fetchpriority="high" id="product-main-image">
+            </div>
         {% else %}
             <div class="no-image large">No Image</div>
+        {% endif %}
+
+        {% if product.gallery_images.all %}
+        <div class="product-thumb-strip">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-thumb active" loading="lazy">
+            {% endif %}
+            {% for img in product.gallery_images.all %}
+                <img src="{{ img.image.url }}" alt="{{ product.name }} view {{ forloop.counter }}" class="product-thumb" loading="lazy">
+            {% endfor %}
+        </div>
         {% endif %}
     </div>
     <div class="product-detail-info">
@@ -27,7 +40,11 @@
         </div>
 
         {% if product.in_stock %}
-            <p class="stock in">In Stock</p>
+            {% if product.stock <= 5 %}
+                <p class="stock in low-stock">⚡ Only {{ product.stock }} left in stock — order soon</p>
+            {% else %}
+                <p class="stock in">In Stock</p>
+            {% endif %}
         {% else %}
             <p class="stock out">Out of Stock</p>
         {% endif %}

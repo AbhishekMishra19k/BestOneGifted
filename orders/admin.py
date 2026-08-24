@@ -23,3 +23,29 @@ class OrderAdmin(admin.ModelAdmin):
     list_editable = ['status', 'is_paid', 'whatsapp_confirmed']
     search_fields = ['full_name', 'phone', 'email']
     inlines = [OrderItemInline]
+    actions = ['mark_as_placed', 'mark_as_packed', 'mark_as_shipped', 'mark_as_delivered', 'mark_as_paid']
+
+    @admin.action(description='Mark selected orders as Packed')
+    def mark_as_packed(self, request, queryset):
+        updated = queryset.update(status=Order.STATUS_PACKED)
+        self.message_user(request, f'{updated} order(s) marked as Packed.')
+
+    @admin.action(description='Mark selected orders as Shipped')
+    def mark_as_shipped(self, request, queryset):
+        updated = queryset.update(status=Order.STATUS_SHIPPED)
+        self.message_user(request, f'{updated} order(s) marked as Shipped.')
+
+    @admin.action(description='Mark selected orders as Delivered')
+    def mark_as_delivered(self, request, queryset):
+        updated = queryset.update(status=Order.STATUS_DELIVERED)
+        self.message_user(request, f'{updated} order(s) marked as Delivered.')
+
+    @admin.action(description='Mark selected orders as Placed')
+    def mark_as_placed(self, request, queryset):
+        updated = queryset.update(status=Order.STATUS_PLACED)
+        self.message_user(request, f'{updated} order(s) marked as Placed.')
+
+    @admin.action(description='Mark selected orders as Paid')
+    def mark_as_paid(self, request, queryset):
+        updated = queryset.update(is_paid=True)
+        self.message_user(request, f'{updated} order(s) marked as Paid.')

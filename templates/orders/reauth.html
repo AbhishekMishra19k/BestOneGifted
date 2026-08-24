@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Confirm It's You — BestOneGifted{% endblock %}
+{% block content %}
+<section class="checkout-page">
+    <h1>Confirm It's You</h1>
+    <p>For your security, please re-enter your password to continue to checkout.</p>
+    <form method="post" style="max-width:360px;">
+        {% csrf_token %}
+        <input type="password" name="reauth_password" placeholder="Password" required>
+        <button type="submit" class="btn">Continue</button>
+    </form>
+</section>
+{% endblock %}

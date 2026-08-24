@@ -2,7 +2,7 @@
     <div class="img-wrap" style="position:relative;">
         <a href="{{ product.get_absolute_url }}">
             {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
             {% else %}
                 <div class="no-image">No Image</div>
             {% endif %}

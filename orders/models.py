@@ -74,13 +74,14 @@ class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
 
     # Security: random, unguessable token for guest order-confirmation access (fixes IDOR — see SECURITY_AUDIT.md #2)
-    access_token = models.CharField(max_length=64, unique=True, editable=False, blank=True)
+    access_token = models.CharField(max_length=64, blank=True, null=True)
     # Security: prevents duplicate orders from double-clicks / retried requests (fixes #5)
     idempotency_key = models.CharField(max_length=64, unique=True, null=True, blank=True, editable=False)
 
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    special_instructions = models.TextField(blank=True, help_text='Gifting notes / personalization instructions from customer')
+    shipping_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Delivery/shipping charge (Rs.), 0 = free shipping')
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='GST/tax amount (Rs.), if applicable')
 
     full_name = models.CharField(max_length=150)
     email = models.EmailField(blank=True)
@@ -110,7 +111,7 @@ class Order(models.Model):
 
     def get_total_cost(self):
         subtotal = sum(item.get_cost() for item in self.items.all())
-        return max(subtotal - self.discount_amount, 0)
+        return max(subtotal - self.discount_amount + self.shipping_fee + self.tax_amount, 0)
 
     def get_subtotal(self):
         return sum(item.get_cost() for item in self.items.all())

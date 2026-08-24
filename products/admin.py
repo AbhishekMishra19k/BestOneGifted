@@ -1,11 +1,15 @@
 from django.contrib import admin
-from .models import Category, Product, Review, NewsletterSubscriber, ContactMessage
+from .models import Category, Product, Review, NewsletterSubscriber, ContactMessage, ProductImage
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug']
     prepopulated_fields = {'slug': ('name',)}
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 3
 
 
 @admin.register(Product)
@@ -15,6 +19,8 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ['price', 'stock', 'is_active', 'is_bestseller', 'is_deal_of_day', 'audience_tag']
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name', 'description']
+    inlines = [ProductImageInline]
+
 
 
 @admin.register(NewsletterSubscriber)

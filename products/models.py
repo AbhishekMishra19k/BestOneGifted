@@ -86,7 +86,16 @@ class ProductVariant(models.Model):
     @property
     def in_stock(self):
         return self.stock > 0
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, related_name='gallery_images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='products/gallery/')
+    order = models.PositiveIntegerField(default=0, help_text='Lower numbers show first')
 
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f'{self.product.name} — image {self.order}'
 class Review(models.Model):
     RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
 

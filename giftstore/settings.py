@@ -9,6 +9,9 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-key-in-pr
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 3          # 3 days idle timeout (was Django's 2-week default)
+SESSION_SAVE_EVERY_REQUEST = True              # sliding expiry — resets the 3-day clock on each active request
+
 
 # Production security hardening (only active when DEBUG=False)
 if not DEBUG:
