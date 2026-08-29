@@ -1,13 +1,12 @@
 from decimal import Decimal
 from django.conf import settings
 from django.core.files.storage import default_storage
-from products.models import Product, ProductVariant
+from products.models import Product
 
 
 class Cart:
     """Session-based shopping cart. No login required (guest checkout).
-    Each line item can carry a custom_text, a custom_photo, and a variant
-    (size/color) — each unique combination is its own line item."""
+    Each line item can carry a custom_text and a custom_photo (personalization)."""
 
     def __init__(self, request):
         self.session = request.session
@@ -17,24 +16,21 @@ class Cart:
         self.cart = cart
         self.coupon_code = self.session.get('coupon_code')
 
-    def _line_key(self, product_id, variant_id, custom_text, has_photo_path):
-        return f"{product_id}::{variant_id or ''}::{hash((custom_text or '', has_photo_path or ''))}"
+    def _line_key(self, product_id, custom_text, has_photo_path):
+        # Each personalization combination is its own line item
+        return f"{product_id}::{hash((custom_text or '', has_photo_path or ''))}"
 
-    def add(self, product, quantity=1, override_quantity=False, custom_text='', photo_file=None, variant=None):
+    def add(self, product, quantity=1, override_quantity=False, custom_text='', photo_file=None):
         photo_path = ''
         if photo_file:
             photo_path = default_storage.save(f'personalizations/{photo_file.name}', photo_file)
 
-        variant_id = variant.id if variant else None
-        price = variant.price if variant else product.price
-
-        key = self._line_key(product.id, variant_id, custom_text, photo_path)
+        key = self._line_key(product.id, custom_text, photo_path)
         if key not in self.cart:
             self.cart[key] = {
                 'product_id': product.id,
-                'variant_id': variant_id,
                 'quantity': 0,
-                'price': str(price),
+                'price': str(product.price),
                 'custom_text': custom_text or '',
                 'photo_path': photo_path,
             }
@@ -64,14 +60,11 @@ class Cart:
 
     def __iter__(self):
         product_ids = [v['product_id'] for v in self.cart.values()]
-        variant_ids = [v['variant_id'] for v in self.cart.values() if v.get('variant_id')]
         products = {p.id: p for p in Product.objects.filter(id__in=product_ids)}
-        variants = {v.id: v for v in ProductVariant.objects.filter(id__in=variant_ids)}
         for key, item in self.cart.items():
             data = item.copy()
             data['key'] = key
             data['product'] = products.get(item['product_id'])
-            data['variant'] = variants.get(item.get('variant_id')) if item.get('variant_id') else None
             data['price'] = Decimal(item['price'])
             data['total_price'] = data['price'] * item['quantity']
             if data['product']:

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Review, NewsletterSubscriber, ContactMessage, ProductImage
+from .models import Category, Product, ProductImage, Review, NewsletterSubscriber, ContactMessage
 
 
 @admin.register(Category)
@@ -7,9 +7,14 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug']
     prepopulated_fields = {'slug': ('name',)}
 
+
 class ProductImageInline(admin.TabularInline):
+    """Lets you upload several gallery photos at once on the same page as the
+    product itself — click "Add another Product image" for each extra photo,
+    or select multiple files at once if your browser supports it, then Save."""
     model = ProductImage
-    extra = 3
+    extra = 3  # shows 3 empty upload slots by default; add more as needed
+    fields = ['image', 'order']
 
 
 @admin.register(Product)
@@ -20,7 +25,10 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name', 'description']
     inlines = [ProductImageInline]
-
+    # Bulk delete is already available by default in Django admin: tick the
+    # checkboxes on the left of the products you want to remove, choose
+    # "Delete selected products" from the Action dropdown at the top of the
+    # list, then click "Go". No extra code needed for that — it's built in.
 
 
 @admin.register(NewsletterSubscriber)

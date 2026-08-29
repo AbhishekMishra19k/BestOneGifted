@@ -1,6 +1,6 @@
 <div class="qv-grid">
     <div class="qv-image">
-        {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">{% else %}<div class="no-image large"></div>{% endif %}
+        {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<div class="no-image large"></div>{% endif %}
     </div>
     <div class="qv-info">
         <h2>{{ product.name }}</h2>

@@ -64,7 +64,6 @@
         </div>
         <div class="cart-total ambient-card">
             <div>Subtotal: Rs. {{ cart.get_subtotal }}</div>
-            <div>Shipping: Free</div>
             {% if cart.get_coupon_discount > 0 %}<div>Discount: -Rs. {{ cart.get_coupon_discount }}</div>{% endif %}
             <div style="font-size:20px;font-weight:700;">Total: Rs. {{ cart.get_total_price }}</div>
         </div>

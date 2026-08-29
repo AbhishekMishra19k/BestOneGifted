@@ -6,24 +6,21 @@
 <section class="product-detail">
     <div class="product-detail-image ambient-card">
         {% if product.image %}
-            <div class="product-zoom-wrap" id="product-zoom-wrap">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" fetchpriority="high" id="product-main-image">
-            </div>
+            <img id="main-product-image" src="{{ product.image.url }}" alt="{{ product.name }}" loading="eager">
         {% else %}
             <div class="no-image large">No Image</div>
         {% endif %}
-
-        {% if product.gallery_images.all %}
-        <div class="product-thumb-strip">
-            {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-thumb active" loading="lazy">
-            {% endif %}
-            {% for img in product.gallery_images.all %}
-                <img src="{{ img.image.url }}" alt="{{ product.name }} view {{ forloop.counter }}" class="product-thumb" loading="lazy">
-            {% endfor %}
-        </div>
-        {% endif %}
     </div>
+    {% if product.gallery_images.all %}
+    <div class="product-gallery-strip">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="gallery-thumb active" onclick="document.getElementById('main-product-image').src=this.src; document.querySelectorAll('.gallery-thumb').forEach(t=>t.classList.remove('active')); this.classList.add('active');" loading="lazy">
+        {% endif %}
+        {% for img in product.gallery_images.all %}
+            <img src="{{ img.image.url }}" alt="{{ product.name }} extra view" class="gallery-thumb" onclick="document.getElementById('main-product-image').src=this.src; document.querySelectorAll('.gallery-thumb').forEach(t=>t.classList.remove('active')); this.classList.add('active');" loading="lazy">
+        {% endfor %}
+    </div>
+    {% endif %}
     <div class="product-detail-info">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
             <h1>{{ product.name }}</h1>
@@ -40,11 +37,7 @@
         </div>
 
         {% if product.in_stock %}
-            {% if product.stock <= 5 %}
-                <p class="stock in low-stock">⚡ Only {{ product.stock }} left in stock — order soon</p>
-            {% else %}
-                <p class="stock in">In Stock</p>
-            {% endif %}
+            <p class="stock in">In Stock</p>
         {% else %}
             <p class="stock out">Out of Stock</p>
         {% endif %}

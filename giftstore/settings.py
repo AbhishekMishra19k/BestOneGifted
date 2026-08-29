@@ -9,9 +9,6 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-key-in-pr
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 3          # 3 days idle timeout (was Django's 2-week default)
-SESSION_SAVE_EVERY_REQUEST = True              # sliding expiry — resets the 3-day clock on each active request
-
 
 # Production security hardening (only active when DEBUG=False)
 if not DEBUG:
@@ -92,7 +89,14 @@ WSGI_APPLICATION = 'giftstore.wsgi.application'
 # Local dev: SQLite. Production: set DATABASE_URL env var (Postgres) on Render/Railway.
 DATABASE_URL = config('DATABASE_URL', default='')
 if DATABASE_URL:
-    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
+    # conn_max_age=0 on purpose: Vercel's serverless functions can freeze/thaw
+    # containers unpredictably, and a "kept alive" DB connection (conn_max_age>0)
+    # can be resumed in a half-dead state after a freeze, causing exactly the
+    # "works after a reload" intermittent-error pattern. A fresh connection per
+    # request is slightly slower but far more reliable here. Neon's pooler
+    # (the "-pooler" hostname in your connection string) makes opening a new
+    # connection on every request cheap, so this isn't a real performance cost.
+    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=0)}
 else:
     DATABASES = {
         'default': {

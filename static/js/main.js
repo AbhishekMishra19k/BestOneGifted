@@ -307,29 +307,3 @@ document.addEventListener('DOMContentLoaded', function () {
         loginPopupOverlay.addEventListener('click', closeLoginPopup);
     }
 });
-
-// Product gallery thumbnail swap + hover zoom
-(function () {
-    const wrap = document.getElementById('product-zoom-wrap');
-    const mainImg = document.getElementById('product-main-image');
-    if (!wrap || !mainImg) return;
-
-    document.querySelectorAll('.product-thumb').forEach(function (thumb) {
-        thumb.addEventListener('click', function () {
-            mainImg.src = thumb.src;
-            document.querySelectorAll('.product-thumb').forEach(function (t) { t.classList.remove('active'); });
-            thumb.classList.add('active');
-        });
-    });
-
-    wrap.addEventListener('mousemove', function (e) {
-        const rect = wrap.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        mainImg.style.transformOrigin = x + '% ' + y + '%';
-        wrap.classList.add('zoomed');
-    });
-    wrap.addEventListener('mouseleave', function () {
-        wrap.classList.remove('zoomed');
-    });
-})();

@@ -60,7 +60,6 @@
                 {% endfor %}
             </ul>
             <strong>Subtotal: Rs. {{ cart.get_subtotal }}</strong>
-            <div style="color:var(--muted);">Shipping: Free</div>
             {% if cart.get_coupon_discount > 0 %}<div style="color:var(--green-dark);">Coupon Discount: -Rs. {{ cart.get_coupon_discount }}</div>{% endif %}
             <strong style="display:block;margin-top:6px;font-size:18px;">Total: Rs. {{ cart.get_total_price }}</strong>
         </div>

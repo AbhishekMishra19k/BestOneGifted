@@ -20,7 +20,7 @@
             {% for product in new_arrivals|slice:":3" %}
                 <a href="{{ product.get_absolute_url }}" class="hero-showcase-card ambient-card glow-hover{% if forloop.counter == 2 %} hero-showcase-card--lead{% endif %}">
                     {% if product.image %}
-                       <img src="{{ product.image.url }}" alt="{{ product.name }}" fetchpriority="high"> 
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
                     {% else %}
                         <div class="no-image">No Image</div>
                     {% endif %}
@@ -64,7 +64,7 @@
 {% if deal_of_day %}
 <div class="deal-banner"><div class="deal-marquee">🔥 DEAL OF THE DAY — {{ deal_of_day.name }} at Rs. {{ deal_of_day.price }} — Limited Time Offer — Grab It Before It's Gone! 🔥</div></div>
 <div class="deal-of-day-card reveal">
-    {% if deal_of_day.image %}<img src="{{ deal_of_day.image.url }}" alt="{{ deal_of_day.name }}" loading="lazy">{% endif %}
+    {% if deal_of_day.image %}<img src="{{ deal_of_day.image.url }}" alt="{{ deal_of_day.name }}">{% endif %}
     <div style="flex:1;">
         <h3>{{ deal_of_day.name }}</h3>
         <div class="price-row">
@@ -142,7 +142,7 @@
         {% for review in reviews %}
             <div class="review-card">
                 <div class="review-stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
-                {% if review.photo %}<img src="{{ review.photo.url }}" alt="Customer photo" class="review-photo" loading="lazy">{% endif %}
+                {% if review.photo %}<img src="{{ review.photo.url }}" alt="Customer photo" class="review-photo">{% endif %}
                 {% if review.video_url %}<a href="{{ review.video_url }}" target="_blank" rel="noopener" class="review-video-tag">▶ Watch video review</a>{% endif %}
                 <p>"{{ review.comment }}"</p>
                 <div class="review-author">— {{ review.user.first_name|default:review.user.username }}{% if review.product %}, bought {{ review.product.name }}{% endif %}</div>

@@ -1,9 +1,6 @@
 import secrets
 from decimal import Decimal
 
-from django.contrib.auth import get_user_model
-import time
-
 from django.db import transaction
 from django.db.models import F
 from django.shortcuts import render, redirect, get_object_or_404
@@ -89,27 +86,12 @@ def _create_order_from_cart(request, cart, form_data, idempotency_key):
 
     return order, True
 
+
 def checkout(request):
     cart = Cart(request)
     if len(cart) == 0:
         messages.warning(request, 'Your cart is empty.')
         return redirect('products:home')
-
-    # Fix SECURITY_AUDIT.md #8: re-confirm identity if this session has been
-    # idle a while before letting it reach checkout (shared/public device risk).
-    if request.user.is_authenticated:
-        last_active = request.session.get('_last_checkout_reauth', 0)
-        if time.time() - last_active > 60 * 60 * 6:  # 6 hours since last confirm
-            if request.method == 'POST' and 'reauth_password' in request.POST:
-                from django.contrib.auth import authenticate
-                user = authenticate(request, username=request.user.username, password=request.POST.get('reauth_password'))
-                if user:
-                    request.session['_last_checkout_reauth'] = time.time()
-                else:
-                    messages.error(request, 'Incorrect password. Please try again.')
-                    return render(request, 'orders/reauth.html')
-            else:
-                return render(request, 'orders/reauth.html')
 
     initial = {}
     if request.user.is_authenticated:
@@ -124,7 +106,7 @@ def checkout(request):
             'pincode': profile.pincode if profile else '',
         }
 
-    if request.method == 'POST' and 'idempotency_key' in request.POST:
+    if request.method == 'POST':
         # Fix SECURITY_AUDIT.md #8: throttle checkout submissions per IP —
         # legitimate shoppers never need more than a handful of attempts a
         # minute; this blocks scripted order-spam / stock-exhaustion floods.
@@ -167,6 +149,7 @@ def checkout(request):
         'initial': initial,
         'idempotency_key': secrets.token_urlsafe(32),
     })
+
 
 def order_success(request, order_id, token):
     """
