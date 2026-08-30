@@ -1,65 +1,74 @@
 /* ================================================================
-   BestOneGifted — Futuristic Premium Dark Design System
-   Reorganized: Variables → Reset → Typography → Background →
-   Glass System → Buttons → Forms → Utilities → Animations →
-   Responsive → Accessibility → Component styles (preserved
-   selectors from the original stylesheet, restyled for dark theme)
+   BestOneGifted — White + Light Green Design System
+   Dominant palette: white/off-white family. Accent: light green only
+   (soft ambient glow, gradient rings, hover states). Header is
+   static/unfixed. Selectors kept 1:1 from the prior stylesheet so no
+   template/JS hook breaks.
    ================================================================ */
 
 /* ============================================
    1. CSS VARIABLES
    ============================================ */
 :root {
-    /* Backgrounds */
-    --bg: #090A0F;
-    --bg-2: #111426;
-    --bg-3: #17152A;
-    --bg-4: #1B1635;
-    --card-bg: #12131C;
+    /* Backgrounds — white family only */
+    --bg: #FFFFFF;
+    --bg-2: #FAFAFA;
+    --bg-3: #F4F5F7;
+    --bg-4: #F8F9FA;
+    --card-bg: #FFFFFF;
 
-    /* Accents */
-    --cyan: #00F2FE;
-    --blue: #4FACFE;
-    --violet: #8B5CF6;
-    --purple: #A855F7;
-    --green: #10B981;
-    --green-light: #34D399;
-    --green-dark: #0d9488;
-    --gold: #F5B942;
+    /* Accent — light green only (per brand spec) */
+    --green: #22C55E;
+    --green-light: #4ADE80;
+    --green-dark: #16A34A;
+    --green-deep: #15803D;
+    /* Legacy hue names kept so every original rule below still resolves,
+       but all now map into the green family / neutral charcoal — no other
+       accent hues are used anywhere on the site. */
+    --cyan: #4ADE80;
+    --blue: #22C55E;
+    --violet: #16A34A;
+    --purple: #15803D;
+    --gold: #4ADE80;
 
-    /* Text */
-    --text: #FFFFFF;
-    --muted: #A0AEC0;
-    --dim: #64748B;
+    /* Text — deep charcoal/slate on white, never harsh/muddy */
+    --text: #1E293B;
+    --muted: #64748B;
+    --dim: #94A3B8;
 
-    /* Legacy aliases kept so every original rule below still resolves
-       to a sensible color under the new theme (no selectors removed) */
-    --green-pale: rgba(255,255,255,0.08);
-    --green-pale2: rgba(255,255,255,0.04);
+    /* Legacy pale aliases */
+    --green-pale: rgba(34,197,94,0.08);
+    --green-pale2: rgba(34,197,94,0.04);
 
-    /* Glass */
-    --glass-bg: rgba(255,255,255,0.05);
-    --glass-border: rgba(255,255,255,0.12);
-    --glass-blur: 16px;
+    /* "Glass" system reinterpreted for light theme: soft white cards with
+       pearl-grey borders instead of dark translucent panels */
+    --glass-bg: #FFFFFF;
+    --glass-border: #E5E7EB;
+    --glass-blur: 0px;
 
-    /* Shadows / glow */
-    --glow-cyan: 0 0 24px rgba(0,242,254,.35);
-    --glow-violet: 0 0 24px rgba(139,92,246,.35);
-    --glow-purple: 0 0 24px rgba(168,85,247,.3);
-    --glow-green: 0 0 20px rgba(16,185,129,.3);
+    /* Shadows / glow — light green ambient glow + soft neutral shadow */
+    --glow-cyan: 0 0 24px rgba(34,197,94,.20);
+    --glow-violet: 0 0 24px rgba(34,197,94,.20);
+    --glow-purple: 0 0 24px rgba(34,197,94,.18);
+    --glow-green: 0 8px 28px rgba(34,197,94,.22);
+    --shadow-soft: 0 2px 10px rgba(15,23,42,.05);
+    --shadow-card: 0 8px 24px rgba(15,23,42,.06);
+    --shadow-lift: 0 16px 36px rgba(15,23,42,.10);
 
-    --radius: 14px;
-    --radius-sm: 8px;
-    --radius-lg: 22px;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-lg: 24px;
 }
 
 /* ============================================
    2. RESET
    ============================================ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { overflow-x: hidden; }
 img { max-width: 100%; display: block; }
 button, input, textarea, select { font: inherit; color: inherit; }
+a, button, input[type=submit], .btn, .btn-small, .icon-link { touch-action: manipulation; }
 ul, ol { list-style: none; }
 
 /* ============================================
@@ -71,7 +80,7 @@ body {
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
 }
-h1, h2, h3, h4 { font-weight: 800; letter-spacing: -.01em; }
+h1, h2, h3, h4 { font-weight: 800; letter-spacing: -.01em; color: var(--text); }
 a { text-decoration: none; color: inherit; }
 
 /* ============================================
