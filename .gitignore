@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 db.sqlite3
 .env
+staticfiles/
 media/products/*
 !media/products/.gitkeep
 venv/

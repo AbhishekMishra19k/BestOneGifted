@@ -17,6 +17,9 @@ const CSRF_TOKEN = getCookie('csrftoken');
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ---------- 0) Render Lucide icons (call again after any AJAX content swap) ----------
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
     // ---------- 1) Auto-hide messages ----------
     document.querySelectorAll('.messages .message').forEach(function (msg) {
         setTimeout(function () {
@@ -118,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.drawer_html) {
                         document.getElementById('drawer-content').innerHTML = data.drawer_html;
                         bindCartForms();
+                        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
                     }
                     if (typeof data.count !== 'undefined') updateCartBadges(data.count);
                     if (cartIconLink) {
@@ -165,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     qvModal.classList.add('open');
                     qvOverlay.classList.add('open');
                     bindCartForms();
+                    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
                 });
         });
     });

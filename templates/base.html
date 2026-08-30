@@ -8,6 +8,7 @@
     <title>{% block title %}BestOneGifted — Customized Gifts for Every Occasion{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <meta name="csrf-token" content="{{ csrf_token }}">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -18,10 +19,15 @@
         <span class="topbar-msg">🚚 Cash on Delivery Available · Delivered in 5-8 Days</span>
     </div>
     <div class="nav-wrap glass">
-        <button type="button" class="hamburger-btn" id="mobile-nav-open" aria-label="Open menu">☰</button>
+        <button type="button" class="hamburger-btn" id="mobile-nav-open" aria-label="Open menu"><i data-lucide="menu"></i></button>
 
         <a href="{% url 'products:home' %}" class="logo">
-            <img src="{% static 'images/logo.png' %}" alt="BestOneGifted" class="logo-img">
+            <img src="{% static 'images/logo.png' %}" alt="BestOneGifted" class="logo-img"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <span class="logo-fallback">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="1"/><path d="M12 8v13"/><path d="M19 8V6a2 2 0 0 0-2-2h-1a2.5 2.5 0 0 0 0 5H3.5a2.5 2.5 0 0 1 0-5H5a2 2 0 0 0-2 2v2"/></svg>
+                BestOneGifted
+            </span>
         </a>
 
         <div class="search-wrap">
@@ -51,15 +57,15 @@
 
         <div class="header-icons">
             <a href="{% url 'wishlist:wishlist_page' %}" class="icon-link" title="Wishlist">
-                ♥{% if wishlist_count > 0 %}<span class="icon-badge">{{ wishlist_count }}</span>{% endif %}
+                <i data-lucide="heart" style="width:18px;height:18px;"></i>{% if wishlist_count > 0 %}<span class="icon-badge">{{ wishlist_count }}</span>{% endif %}
             </a>
             <a href="#" id="cart-icon-link" class="icon-link cart-link" title="Cart">
-                🛒{% if cart|length > 0 %}<span class="icon-badge">{{ cart|length }}</span>{% endif %}
+                <i data-lucide="shopping-cart" style="width:18px;height:18px;"></i>{% if cart|length > 0 %}<span class="icon-badge">{{ cart|length }}</span>{% endif %}
             </a>
             {% if user.is_authenticated %}
-                <a href="{% url 'accounts:dashboard' %}" class="icon-link" title="My Account">👤</a>
+                <a href="{% url 'accounts:dashboard' %}" class="icon-link" title="My Account"><i data-lucide="user" style="width:18px;height:18px;"></i></a>
             {% else %}
-                <a href="{% url 'accounts:login' %}" class="icon-link" title="Login">👤</a>
+                <a href="{% url 'accounts:login' %}" class="icon-link" title="Login"><i data-lucide="user" style="width:18px;height:18px;"></i></a>
             {% endif %}
         </div>
     </div>
@@ -68,7 +74,7 @@
 <!-- Mobile Nav Drawer (hamburger menu) -->
 <div id="mobile-nav-overlay" class="drawer-overlay"></div>
 <nav id="mobile-nav-drawer" class="mobile-nav-drawer">
-    <button type="button" class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">✕</button>
+    <button type="button" class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu"><i data-lucide="x"></i></button>
     <a href="{% url 'products:home' %}">Home</a>
     <a href="{% url 'products:product_list' %}">Shop</a>
     <a href="{% url 'products:product_list' %}">Categories</a>
@@ -154,7 +160,7 @@
 <aside id="cart-drawer" class="cart-drawer">
     <div class="drawer-header">
         <h3>Your Cart</h3>
-        <button id="drawer-close">✕</button>
+        <button id="drawer-close"><i data-lucide="x"></i></button>
     </div>
     <div id="drawer-content">{% include "cart/_drawer.html" %}</div>
 </aside>
@@ -162,7 +168,7 @@
 <!-- Quick View Modal -->
 <div id="quick-view-overlay" class="drawer-overlay"></div>
 <div id="quick-view-modal" class="quick-view-modal">
-    <button id="qv-close">✕</button>
+    <button id="qv-close"><i data-lucide="x"></i></button>
     <div id="qv-content"></div>
 </div>
 
@@ -173,14 +179,14 @@
 
 <!-- Sticky Mobile Bottom Nav -->
 <nav class="mobile-bottom-nav">
-    <a href="{% url 'products:home' %}"><span>🏠</span>Home</a>
-    <a href="{% url 'products:product_list' %}"><span>🛍️</span>Shop</a>
-    <a href="{% url 'wishlist:wishlist_page' %}"><span>♥</span>Wishlist</a>
-    <a href="#" id="mobile-cart-link"><span>🛒</span>Cart{% if cart|length > 0 %}<em>{{ cart|length }}</em>{% endif %}</a>
+    <a href="{% url 'products:home' %}"><span><i data-lucide="home" style="width:18px;height:18px;"></i></span>Home</a>
+    <a href="{% url 'products:product_list' %}"><span><i data-lucide="shopping-bag" style="width:18px;height:18px;"></i></span>Shop</a>
+    <a href="{% url 'wishlist:wishlist_page' %}"><span><i data-lucide="heart" style="width:18px;height:18px;"></i></span>Wishlist</a>
+    <a href="#" id="mobile-cart-link"><span><i data-lucide="shopping-cart" style="width:18px;height:18px;"></i></span>Cart{% if cart|length > 0 %}<em>{{ cart|length }}</em>{% endif %}</a>
     {% if user.is_authenticated %}
-        <a href="{% url 'accounts:dashboard' %}"><span>👤</span>Account</a>
+        <a href="{% url 'accounts:dashboard' %}"><span><i data-lucide="user" style="width:18px;height:18px;"></i></span>Account</a>
     {% else %}
-        <a href="{% url 'accounts:login' %}"><span>👤</span>Login</a>
+        <a href="{% url 'accounts:login' %}"><span><i data-lucide="user" style="width:18px;height:18px;"></i></span>Login</a>
     {% endif %}
 </nav>
 

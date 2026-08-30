@@ -270,7 +270,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 .nav-wrap { display: flex; align-items: center; gap: 18px; padding: 16px 5%; max-width: 1400px; margin: 0 auto; border-bottom: 1px solid var(--glass-border); flex-wrap: wrap; }
 .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: var(--text); }
-.logo img, .logo-img { height: 40px; width: auto; }
+.logo img, .logo-img { max-height: 48px; height: 40px; width: auto; object-fit: contain; display: block; }
+.logo-fallback { display: none; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: var(--green-deep); }
+.logo-fallback svg { flex-shrink: 0; }
 .main-nav { display: flex; align-items: center; gap: 18px; font-weight: 600; font-size: 14.5px; flex-wrap: wrap; row-gap: 8px; }
 .main-nav a { color: var(--text); transition: color .2s ease; padding: 4px 2px; position: relative; }
 .main-nav a::after { content: ''; position: absolute; left: 0; right: 100%; bottom: -3px; height: 2px; background: var(--green); transition: right .25s ease; }
