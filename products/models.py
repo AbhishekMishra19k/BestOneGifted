@@ -56,6 +56,7 @@ class Product(models.Model):
     def in_stock(self):
         return self.stock > 0
 
+
 class ProductImage(models.Model):
     """Extra gallery photos for a product (in addition to the main `image`
     field above). Lets admin upload multiple photos per product — angles,
@@ -72,25 +73,6 @@ class ProductImage(models.Model):
         return f'Image for {self.product.name} (#{self.order})'
 
 
-
-class ProductVariant(models.Model):
-    product = models.ForeignKey(Product, related_name='variants', on_delete=models.CASCADE)
-    size = models.CharField(max_length=50, blank=True, help_text='e.g. S, M, L, XL (leave blank if not applicable)')
-    color = models.CharField(max_length=50, blank=True, help_text='e.g. Red, Blue (leave blank if not applicable)')
-    sku = models.CharField(max_length=64, blank=True, null=True, unique=True, help_text='Optional unique code for this variant')
-    price = models.DecimalField(max_digits=10, decimal_places=2, help_text='Full price for this specific variant (Rs.)')
-    stock = models.PositiveIntegerField(default=0)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ['size', 'color']
-        constraints = [
-            models.UniqueConstraint(fields=['product', 'size', 'color'], name='unique_variant_per_product'),
-        ]
-
-    def __str__(self):
-        return f'{self.product.name} - {self.size} {self.color}'.strip()
-    
 class Review(models.Model):
     RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
 
